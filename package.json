@@ -6,7 +6,11 @@
 		"dev": "cf dev",
 		"build": "cf build",
 		"deploy": "cf deploy",
-		"typecheck": "cf workers types && tsc"
+		"typecheck": "cf workers types && tsc",
+		"fmt": "oxfmt --check .",
+		"fmt:write": "oxfmt .",
+		"lint": "oxlint .",
+		"lint:write": "oxlint --fix ."
 	},
 	"devDependencies": {
 		"@cloudflare/vite-plugin": "beta",
