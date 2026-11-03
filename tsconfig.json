@@ -4,6 +4,8 @@
     "lib": ["es2024"],
     "module": "preserve",
     "moduleResolution": "bundler",
+    "jsx": "react-jsx",
+    "jsxImportSource": "hono/jsx",
     "types": [],
     "strict": true,
     "noEmit": true,
