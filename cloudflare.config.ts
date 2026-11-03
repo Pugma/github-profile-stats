@@ -6,8 +6,10 @@ export default defineConfig({
     name: "github-profile-stats",
     compatibilityDate: "2026-10-01",
     entrypoint,
+    cache: { enabled: true },
     env: {
-      WORLD: bindings.text("World"),
+      // No id: the first deploy provisions the namespace and later deploys inherit it from the deployed Worker.
+      PROFILE_STATS: bindings.kv(),
     },
   },
 });
