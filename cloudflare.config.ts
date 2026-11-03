@@ -19,8 +19,8 @@ export default defineConfig({
       }),
     },
     env: {
-      // No id: the first deploy provisions the namespace and later deploys inherit it from the deployed Worker.
-      PROFILE_STATS: bindings.kv(),
+      // Without an id, CI deploys abort after any dashboard edit: cf's strict config diff ignores binding inheritance.
+      PROFILE_STATS: bindings.kv({ id: env.PROFILE_STATS_NAMESPACE_ID || undefined }),
       PROFILE_USER: bindings.text(env.PROFILE_USER || "Pugma"),
       GITHUB_TOKEN: bindings.secret(),
     },
