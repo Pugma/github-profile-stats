@@ -54,6 +54,10 @@ const typography = {
 // Background bars of consecutive rows read as one chart, so they sit only a part gap apart.
 const listHeight = (count: number) => count * lineHeight.row + Math.max(0, count - 1) * space.part;
 const rowTop = (top: number, index: number) => top + index * (lineHeight.row + space.part);
+// Bars start just outside the row content and the longest one spans 70% of the card on every
+// card, so bar lengths compare consistently across cards.
+const barLeft = padding - space.part;
+const barWidth = (value: number, max: number) => (max > 0 ? (cardWidth * 0.7 * value) / max : 0);
 const metricIcons = {
   totalContributions: "activity",
   commits: "commit",
@@ -152,7 +156,6 @@ function Metrics({
 }) {
   const shares = rows.map((row) => (row.allTime > 0 ? row.last12Months / row.allTime : 0));
   const maxShare = Math.max(0, ...shares);
-  const maxShareWidth = cardWidth * 0.7;
   const headerY = top + lineHeight.meta / 2;
   const rowsTop = top + lineHeight.meta + space.header;
   return (
@@ -206,9 +209,9 @@ function Metrics({
                   . Bar widths are relative to the largest share.
                 </title>
                 <rect
-                  x={padding - space.part}
+                  x={barLeft}
                   y={y}
-                  width={maxShare > 0 ? (maxShareWidth * shares[index]) / maxShare : 0}
+                  width={barWidth(shares[index], maxShare)}
                   height={lineHeight.row}
                   opacity="0.18"
                   fill={
@@ -448,13 +451,11 @@ function RepositoryBackground({
   max: number;
   segments: { count: number; color: string }[];
 }) {
-  const left = padding - space.part;
-  const scale = (cardWidth - left * 2) / Math.max(1, max);
-  let x = left;
+  let x = barLeft;
   return (
     <g opacity="0.18" aria-hidden="true">
       {segments.map((segment, index) => {
-        const width = segment.count * scale;
+        const width = barWidth(segment.count, max);
         const start = x;
         x += width;
         return (

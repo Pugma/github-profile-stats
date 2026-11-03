@@ -407,6 +407,20 @@ test("OSS and Recent are equally tall with five entries", () => {
   assert.equal(svgHeight(renderCard(input, "oss")), svgHeight(renderCard(input, "recent")));
 });
 
+test("the longest bar spans 70% of the card width on every card", () => {
+  const input = fiveRowCards();
+  for (const name of ["overview", "projects", "oss"] as const) {
+    const svg = renderCard(input, name);
+    const bars = svgElements(svg, "rect").filter((element) => element.attributes.height === "24");
+    assert.ok(bars.length > 0, name);
+    const left = Math.min(...bars.map((element) => Number(element.attributes.x)));
+    const right = Math.max(
+      ...bars.map((element) => Number(element.attributes.x) + Number(element.attributes.width)),
+    );
+    assert.ok(Math.abs(right - left - 560 * 0.7) < 1e-9, name);
+  }
+});
+
 test("Recent uses more description width when its right-aligned counts are shorter", () => {
   const snapshot = buildSnapshot(snapshotInput());
   const repo = snapshot.recentRepositories!.repositories[0];
