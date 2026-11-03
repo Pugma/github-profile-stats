@@ -11,6 +11,12 @@ export default class ProfileCards extends WorkerEntrypoint<ProductionBindings> {
     return serveCards(request, this.env.PROFILE_STATS, "public");
   }
 
+  async scheduled(controller: ScheduledController) {
+    await this.ctx.exports.ProfileRefresh.create({
+      params: { scheduledTime: controller.scheduledTime },
+    });
+  }
+
   purgeCache() {
     return purgeCardCache(this.ctx.cache);
   }
