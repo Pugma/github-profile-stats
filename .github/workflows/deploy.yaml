@@ -18,7 +18,9 @@ jobs:
           persist-credentials: false
       - uses: jdx/mise-action@v5.2.6
       - run: pnpm install --frozen-lockfile
+      # GITHUB_TOKEN is set on the Worker in Cloudflare; deploys keep existing secrets.
       - run: pnpm deploy
         env:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          PROFILE_USER: ${{ vars.PROFILE_USER }}
