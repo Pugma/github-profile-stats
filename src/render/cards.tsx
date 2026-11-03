@@ -30,6 +30,7 @@ const typography = {
   totalValue: 18,
   body: 13,
   meta: 11,
+  profile: 18,
 };
 const repositoryColumns = {
   projects: { x: 42, width: 390 },
@@ -201,6 +202,62 @@ function Metrics({
   );
 }
 
+const avatar = { cx: 52, cy: 84, r: 32 };
+// Matches Projects with five repositories, so the two cards align side by side.
+const overviewHeaderHeight = 95;
+
+function ProfileHeader({ snapshot, colors }: CardProps) {
+  const { cx, cy, r } = avatar;
+  return (
+    <g>
+      {snapshot.avatarDataUrl ? (
+        <g>
+          <defs>
+            <clipPath id="overview-avatar">
+              <circle cx={cx} cy={cy} r={r} />
+            </clipPath>
+          </defs>
+          <image
+            href={snapshot.avatarDataUrl}
+            x={cx - r}
+            y={cy - r}
+            width={r * 2}
+            height={r * 2}
+            preserveAspectRatio="xMidYMid slice"
+            clip-path="url(#overview-avatar)"
+          />
+        </g>
+      ) : (
+        <g>
+          <circle cx={cx} cy={cy} r={r} fill={colors.border} />
+          <text
+            x={cx}
+            y={cy}
+            text-anchor="middle"
+            dominant-baseline="central"
+            font-size={typography.title}
+            font-weight="700"
+            fill={colors.muted}
+          >
+            {snapshot.user.slice(0, 1).toUpperCase()}
+          </text>
+        </g>
+      )}
+      <circle cx={cx} cy={cy} r={r} fill="none" stroke={colors.border} />
+      <text
+        x={cx + r + 16}
+        y={cy}
+        dominant-baseline="central"
+        font-size={typography.profile}
+        font-weight="700"
+        fill={colors.title}
+      >
+        @{snapshot.user}
+      </text>
+    </g>
+  );
+}
+
 function Overview({ snapshot, colors }: CardProps) {
   const { overview } = snapshot;
   const labels = {
@@ -214,21 +271,24 @@ function Overview({ snapshot, colors }: CardProps) {
     <Card
       name="overview"
       colors={colors}
-      height={213}
+      height={213 + overviewHeaderHeight}
       updatedAt={snapshot.updatedAt}
       note="Total follows GitHub's calendar; public-only. Reviews count each PR once per period. Background bars compare Last 12 Months / All Time, scaled to the largest share."
     >
-      <Metrics
-        colors={colors}
-        relativeShare
-        rows={(Object.keys(labels) as (keyof typeof labels)[]).map((key) => ({
-          label: labels[key],
-          icon: metricIcons[key],
-          emphasize: key === "totalContributions",
-          last12Months: overview.last12Months[key],
-          allTime: overview.allTime[key],
-        }))}
-      />
+      <ProfileHeader snapshot={snapshot} colors={colors} />
+      <g transform={`translate(0 ${overviewHeaderHeight})`}>
+        <Metrics
+          colors={colors}
+          relativeShare
+          rows={(Object.keys(labels) as (keyof typeof labels)[]).map((key) => ({
+            label: labels[key],
+            icon: metricIcons[key],
+            emphasize: key === "totalContributions",
+            last12Months: overview.last12Months[key],
+            allTime: overview.allTime[key],
+          }))}
+        />
+      </g>
     </Card>
   );
 }

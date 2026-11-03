@@ -183,6 +183,35 @@ test.each([
   },
 );
 
+const svgHeight = (svg: string) => Number(svgElements(svg, "svg")[0].attributes.height);
+function fiveRowProjectsHeight() {
+  const input = structuredClone(snapshot);
+  const [first] = input.myProjects.topRepositories;
+  input.myProjects.topRepositories = [5, 4, 3, 2, 1].map((commits) => ({
+    repository: `${first.repository}-${commits}`,
+    commits,
+  }));
+  return svgHeight(renderCard(input, "projects"));
+}
+
+test("overview displays the embedded avatar with its login", () => {
+  const input = structuredClone(snapshot);
+  input.avatarDataUrl = "data:image/png;base64,iVBORw0KGgo=";
+  const svg = renderCard(input, "overview");
+  const avatar = svgElements(svg, "image")[0];
+  assert.equal(avatar.attributes.href, input.avatarDataUrl);
+  assert.ok(avatar.attributes["clip-path"]);
+  assert.equal(svgText(svg, "@Pugma").text, "@Pugma");
+});
+
+test("overview without an avatar shows the login initial at the same height", () => {
+  const svg = renderCard(snapshot, "overview");
+  assert.equal(svgHeight(svg), fiveRowProjectsHeight());
+  assert.doesNotMatch(svg, /<image/);
+  assert.match(svg, />P<\/text>/);
+  assert.match(svg, />@Pugma</);
+});
+
 test("Overview background bars compare period shares rather than absolute counts", () => {
   const input = structuredClone(snapshot);
   input.overview.last12Months = {
