@@ -12,6 +12,7 @@ vi.mock("cloudflare:workers", () => ({
       public env: unknown,
     ) {}
   },
+  WorkflowEntrypoint: class {},
 }));
 
 function worker(value: string | null) {
