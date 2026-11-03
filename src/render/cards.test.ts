@@ -194,14 +194,20 @@ function fiveRowProjectsHeight() {
   return svgHeight(renderCard(input, "projects"));
 }
 
-test("overview displays the embedded avatar with its login", () => {
+test("overview shows the avatar and login before the metrics at the five-row Projects height", () => {
   const input = structuredClone(snapshot);
   input.avatarDataUrl = "data:image/png;base64,iVBORw0KGgo=";
   const svg = renderCard(input, "overview");
+  assert.equal(svgHeight(svg), fiveRowProjectsHeight());
   const avatar = svgElements(svg, "image")[0];
   assert.equal(avatar.attributes.href, input.avatarDataUrl);
   assert.ok(avatar.attributes["clip-path"]);
-  assert.equal(svgText(svg, "@Pugma").text, "@Pugma");
+  const login = svgText(svg, "@Pugma");
+  const metrics = svgText(svg, "Total Contributions");
+  assert.ok(
+    Number(avatar.attributes.y) + Number(avatar.attributes.height) < Number(metrics.attributes.y),
+  );
+  assert.ok(Number(login.attributes.y) < Number(metrics.attributes.y));
 });
 
 test("overview without an avatar shows the login initial at the same height", () => {
@@ -328,6 +334,77 @@ test("OSS ranking columns line up under the Last 12 Months and All Time columns"
     assert.equal(value["text-anchor"], "end", content);
     assert.equal(value.x, heading.x, content);
   }
+});
+
+test("card heights stay on the 4 px grid", () => {
+  for (const name of cardNames) {
+    assert.equal(svgHeight(renderCard(snapshot, name)) % 4, 0, name);
+    assert.equal(svgHeight(renderPendingCard(name)) % 4, 0, name);
+  }
+});
+
+test("metrics without background bars read as plain lines, tighter than bar rows", () => {
+  const rowPitch = (svg: string, labels: string[]) => {
+    const ys = labels.map((label) => Number(svgText(svg, label).attributes.y));
+    return ys[1] - ys[0];
+  };
+  assert.equal(rowPitch(renderCard(snapshot, "oss"), ["Pull Requests", "Merged PRs"]), 24);
+  assert.equal(rowPitch(renderCard(snapshot, "projects"), ["Commits", "Active Repositories"]), 24);
+  assert.equal(rowPitch(renderCard(snapshot, "overview"), ["Total Contributions", "Commits"]), 28);
+});
+
+function fiveRowCards() {
+  const input = structuredClone(snapshot);
+  const [external] = input.oss.topRepositories;
+  input.oss.topRepositories = [5, 4, 3, 2, 1].map((prs) => ({
+    ...external,
+    repository: `a/oss-${prs}`,
+    prs,
+  }));
+  const recent = input.recentRepositories!;
+  const [entry] = recent.repositories;
+  recent.repositories = [0, 1, 2, 3, 4].map((index) => ({
+    ...entry,
+    repository: `a/recent-${index}`,
+    description: index % 2 ? null : "Description",
+  }));
+  return input;
+}
+
+test("Recent centres each entry's text block and counts on the same row centre", () => {
+  const svg = renderCard(fiveRowCards(), "recent");
+  const labels = svgElements(svg, "text");
+  const ys = (prefix: string) =>
+    labels
+      .filter((element) => element.text.startsWith(prefix))
+      .map((element) => Number(element.attributes.y));
+  const names = ys("a/recent-");
+  const language = ys("Not specified");
+  const centres = labels
+    .filter((element) => element.text === "/" && element.attributes["text-anchor"] === "middle")
+    .map((element) => Number(element.attributes.y));
+  assert.equal(centres.length, 5);
+  assert.equal(names.length, 5);
+  assert.equal(language.length, 5);
+  const pitches = centres.slice(1).map((y, index) => y - centres[index]);
+  assert.equal(new Set(pitches).size, 1, "every entry keeps the three-line height");
+  for (const [index, centre] of centres.entries()) {
+    // The block from the name box top (16 px) to the language box bottom (12 px) is centred.
+    const blockTop = names[index] - 8;
+    const blockBottom = language[index] + 6;
+    assert.equal(centre - blockTop, blockBottom - centre, `entry ${index}`);
+  }
+  const secondRow = svgGroup(svg, svgText(svg, "a/recent-1"));
+  assert.equal(
+    svgElements(secondRow, "text").length,
+    6,
+    "an entry without a description has only its name, two counts, separator, language and date",
+  );
+});
+
+test("OSS and Recent are equally tall with five entries", () => {
+  const input = fiveRowCards();
+  assert.equal(svgHeight(renderCard(input, "oss")), svgHeight(renderCard(input, "recent")));
 });
 
 test("Recent uses more description width when its right-aligned counts are shorter", () => {

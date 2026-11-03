@@ -17,9 +17,28 @@ export const cardTitles: Record<CardName, string> = {
 type CardProps = { snapshot: Snapshot; colors: Palette; languageOverride?: string };
 const cardWidth = 560;
 const fontFamily = "Arial, Helvetica, sans-serif";
-const contentRight = cardWidth - 20;
+const padding = 20;
+const contentRight = cardWidth - padding;
+// Gaps widen as elements become less related; every gap is a multiple of 4 px.
+const space = { part: 4, sibling: 8, header: 12, group: 16, section: 24 };
+// Text is centred in boxes of these heights, so gaps are measured between box edges.
+const lineHeight = {
+  meta: 12,
+  body: 16,
+  section: 16,
+  legend: 16,
+  line: 20,
+  recentName: 16,
+  row: 24,
+  title: 24,
+};
+const contentTop = padding + lineHeight.title + space.group;
+const footerHeight = space.group + lineHeight.meta + padding;
 // Lower tables reuse the Last 12 Months / All Time columns so values line up vertically.
-const valueColumns = { last12Months: 410, allTime: contentRight };
+const valueColumns = { last12Months: 412, allTime: contentRight };
+const rowIconSize = 16;
+const legendIconSize = 12;
+const labelX = padding + rowIconSize + space.part;
 const typography = {
   title: 21,
   section: 14,
@@ -32,10 +51,9 @@ const typography = {
   meta: 11,
   profile: 18,
 };
-const repositoryColumns = {
-  projects: { x: 42, width: 390 },
-  recent: { x: 44, width: 346 },
-};
+// Background bars of consecutive rows read as one chart, so they sit only a part gap apart.
+const listHeight = (count: number) => count * lineHeight.row + Math.max(0, count - 1) * space.part;
+const rowTop = (top: number, index: number) => top + index * (lineHeight.row + space.part);
 const metricIcons = {
   totalContributions: "activity",
   commits: "commit",
@@ -83,14 +101,22 @@ function Card({
         fill={colors.background}
         stroke={colors.border}
       />
-      <text x="20" y="32" font-size={typography.title} font-weight="700" fill={colors.title}>
+      <text
+        x={padding}
+        y={padding + lineHeight.title / 2}
+        dominant-baseline="central"
+        font-size={typography.title}
+        font-weight="700"
+        fill={colors.title}
+      >
         {cardTitles[name]}
       </text>
       {children}
       <text
         x={contentRight}
-        y={height - 10}
+        y={height - padding - lineHeight.meta / 2}
         text-anchor="end"
+        dominant-baseline="central"
         font-size={typography.meta}
         fill={colors.muted}
       >
@@ -107,29 +133,46 @@ type MetricRow = {
   allTime: number;
   emphasize?: boolean;
 };
+// Without background bars, metric rows are plain lines of text, so they stack like line breaks
+// rather than as separate sibling rows.
+const plainLinesHeight = (count: number) =>
+  count * lineHeight.line + Math.max(0, count - 1) * space.part;
+const metricsHeight = (count: number, relativeShare = false) =>
+  lineHeight.meta + space.header + (relativeShare ? listHeight(count) : plainLinesHeight(count));
 function Metrics({
   rows,
   colors,
+  top,
   relativeShare = false,
 }: {
   rows: MetricRow[];
   colors: Palette;
+  top: number;
   relativeShare?: boolean;
 }) {
   const shares = rows.map((row) => (row.allTime > 0 ? row.last12Months / row.allTime : 0));
   const maxShare = Math.max(0, ...shares);
   const maxShareWidth = cardWidth * 0.7;
+  const headerY = top + lineHeight.meta / 2;
+  const rowsTop = top + lineHeight.meta + space.header;
   return (
     <g>
       {relativeShare && (
-        <text x="20" y="58" font-size={typography.meta} fill={colors.muted}>
+        <text
+          x={padding}
+          y={headerY}
+          dominant-baseline="central"
+          font-size={typography.meta}
+          fill={colors.muted}
+        >
           Relative share of All Time
         </text>
       )}
       <text
         x={valueColumns.last12Months}
-        y="58"
+        y={headerY}
         text-anchor="end"
+        dominant-baseline="central"
         font-size={typography.meta}
         fill={colors.muted}
       >
@@ -137,77 +180,128 @@ function Metrics({
       </text>
       <text
         x={valueColumns.allTime}
-        y="58"
+        y={headerY}
         text-anchor="end"
+        dominant-baseline="central"
         font-size={typography.meta}
         fill={colors.muted}
       >
         All Time
       </text>
-      {rows.map((row, index) => (
-        <g key={row.label}>
-          {relativeShare && (
-            <g>
-              <title>
-                {row.label}:{" "}
-                {row.allTime > 0
-                  ? `${(shares[index] * 100).toFixed(1)}% of All Time in the last 12 months`
-                  : "share unavailable without All Time activity"}
-                . Bar widths are relative to the largest share.
-              </title>
-              <rect
-                x="16"
-                y={69 + index * 24}
-                width={maxShare > 0 ? (maxShareWidth * shares[index]) / maxShare : 0}
-                height="20"
-                opacity="0.18"
-                fill={
-                  row.icon === "activity" || row.icon === "repo" ? colors.accent : colors[row.icon]
-                }
-              />
-            </g>
-          )}
-          <Icon
-            name={row.icon}
-            x={20}
-            y={71 + index * 24}
-            color={row.icon === "activity" || row.icon === "repo" ? colors.icon : colors[row.icon]}
-          />
-          <text x="44" y={84 + index * 24} font-size={typography.label} fill={colors.text}>
-            {row.label}
-          </text>
-          <text
-            x={valueColumns.last12Months}
-            y={84 + index * 24}
-            text-anchor="end"
-            font-size={row.emphasize ? typography.totalValue : typography.value}
-            font-weight={row.emphasize ? 700 : 400}
-            fill={colors.value}
-          >
-            {number(row.last12Months)}
-          </text>
-          <text
-            x={valueColumns.allTime}
-            y={84 + index * 24}
-            text-anchor="end"
-            font-size={row.emphasize ? typography.totalValue : typography.value}
-            font-weight={row.emphasize ? 700 : 400}
-            fill={colors.value}
-          >
-            {number(row.allTime)}
-          </text>
-        </g>
-      ))}
+      {rows.map((row, index) => {
+        const y = relativeShare
+          ? rowTop(rowsTop, index)
+          : rowsTop + index * (lineHeight.line + space.part);
+        const centerY = y + (relativeShare ? lineHeight.row : lineHeight.line) / 2;
+        const valueSize = row.emphasize ? typography.totalValue : typography.value;
+        return (
+          <g key={row.label}>
+            {relativeShare && (
+              <g>
+                <title>
+                  {row.label}:{" "}
+                  {row.allTime > 0
+                    ? `${(shares[index] * 100).toFixed(1)}% of All Time in the last 12 months`
+                    : "share unavailable without All Time activity"}
+                  . Bar widths are relative to the largest share.
+                </title>
+                <rect
+                  x={padding - space.part}
+                  y={y}
+                  width={maxShare > 0 ? (maxShareWidth * shares[index]) / maxShare : 0}
+                  height={lineHeight.row}
+                  opacity="0.18"
+                  fill={
+                    row.icon === "activity" || row.icon === "repo"
+                      ? colors.accent
+                      : colors[row.icon]
+                  }
+                />
+              </g>
+            )}
+            <Icon
+              name={row.icon}
+              x={padding}
+              y={centerY - rowIconSize / 2}
+              color={
+                row.icon === "activity" || row.icon === "repo" ? colors.icon : colors[row.icon]
+              }
+            />
+            <text
+              x={labelX}
+              y={centerY}
+              dominant-baseline="central"
+              font-size={typography.label}
+              fill={colors.text}
+            >
+              {row.label}
+            </text>
+            {(["last12Months", "allTime"] as const).map((column) => (
+              <text
+                key={column}
+                x={valueColumns[column]}
+                y={centerY}
+                text-anchor="end"
+                dominant-baseline="central"
+                font-size={valueSize}
+                font-weight={row.emphasize ? 700 : 400}
+                fill={colors.value}
+              >
+                {number(row[column])}
+              </text>
+            ))}
+          </g>
+        );
+      })}
     </g>
   );
 }
 
-const avatar = { cx: 52, cy: 84, r: 32 };
-// Matches Projects with five repositories, so the two cards align side by side.
-const overviewHeaderHeight = 95;
+function SectionHeading({
+  top,
+  title,
+  meta,
+  colors,
+}: {
+  top: number;
+  title: string;
+  meta: string;
+  colors: Palette;
+}) {
+  const centerY = top + lineHeight.section / 2;
+  return (
+    <g>
+      <text
+        x={padding}
+        y={centerY}
+        dominant-baseline="central"
+        font-size={typography.section}
+        font-weight="600"
+        fill={colors.title}
+      >
+        {title}
+      </text>
+      <text
+        x={contentRight}
+        y={centerY}
+        text-anchor="end"
+        dominant-baseline="central"
+        font-size={typography.meta}
+        fill={colors.muted}
+      >
+        {meta}
+      </text>
+    </g>
+  );
+}
+
+// Sized so Overview is exactly as tall as My Projects with five repositories.
+const avatarSize = 72;
 
 function ProfileHeader({ snapshot, colors }: CardProps) {
-  const { cx, cy, r } = avatar;
+  const r = avatarSize / 2;
+  const cx = padding + r;
+  const cy = contentTop + r;
   return (
     <g>
       {snapshot.avatarDataUrl ? (
@@ -221,8 +315,8 @@ function ProfileHeader({ snapshot, colors }: CardProps) {
             href={snapshot.avatarDataUrl}
             x={cx - r}
             y={cy - r}
-            width={r * 2}
-            height={r * 2}
+            width={avatarSize}
+            height={avatarSize}
             preserveAspectRatio="xMidYMid slice"
             clip-path="url(#overview-avatar)"
           />
@@ -245,7 +339,7 @@ function ProfileHeader({ snapshot, colors }: CardProps) {
       )}
       <circle cx={cx} cy={cy} r={r} fill="none" stroke={colors.border} />
       <text
-        x={cx + r + 16}
+        x={padding + avatarSize + space.group}
         y={cy}
         dominant-baseline="central"
         font-size={typography.profile}
@@ -267,28 +361,29 @@ function Overview({ snapshot, colors }: CardProps) {
     reviews: "Reviews",
     issues: "Issues",
   };
+  const keys = Object.keys(labels) as (keyof typeof labels)[];
+  const metricsTop = contentTop + avatarSize + space.section;
   return (
     <Card
       name="overview"
       colors={colors}
-      height={213 + overviewHeaderHeight}
+      height={metricsTop + metricsHeight(keys.length, true) + footerHeight}
       updatedAt={snapshot.updatedAt}
       note="Total follows GitHub's calendar; public-only. Reviews count each PR once per period. Background bars compare Last 12 Months / All Time, scaled to the largest share."
     >
       <ProfileHeader snapshot={snapshot} colors={colors} />
-      <g transform={`translate(0 ${overviewHeaderHeight})`}>
-        <Metrics
-          colors={colors}
-          relativeShare
-          rows={(Object.keys(labels) as (keyof typeof labels)[]).map((key) => ({
-            label: labels[key],
-            icon: metricIcons[key],
-            emphasize: key === "totalContributions",
-            last12Months: overview.last12Months[key],
-            allTime: overview.allTime[key],
-          }))}
-        />
-      </g>
+      <Metrics
+        colors={colors}
+        top={metricsTop}
+        relativeShare
+        rows={keys.map((key) => ({
+          label: labels[key],
+          icon: metricIcons[key],
+          emphasize: key === "totalContributions",
+          last12Months: overview.last12Months[key],
+          allTime: overview.allTime[key],
+        }))}
+      />
     </Card>
   );
 }
@@ -296,7 +391,7 @@ function Overview({ snapshot, colors }: CardProps) {
 // Each count is right-aligned in its own column so separators line up across rows; a single
 // right-aligned "a / b / c" string shifts them whenever the digit counts differ.
 function separatedColumns(rows: number[][], right: number, size: number) {
-  const separatorWidth = estimateTextWidth(" / ", size);
+  const slashWidth = estimateTextWidth("/", size);
   const columnCount = rows[0]?.length ?? 0;
   const ends: number[] = [];
   const separators: number[] = [];
@@ -305,8 +400,8 @@ function separatedColumns(rows: number[][], right: number, size: number) {
     ends.unshift(x);
     x -= Math.max(...rows.map((row) => estimateTextWidth(String(row[column]), size)));
     if (column > 0) {
-      separators.unshift(x - separatorWidth / 2);
-      x -= separatorWidth;
+      separators.unshift(x - space.part - slashWidth / 2);
+      x -= slashWidth + space.part * 2;
     }
   }
   return { ends, separators, width: right - x };
@@ -321,17 +416,22 @@ function SeparatedCounts({
   y: number;
   "font-size": number;
   fill: string;
-  "dominant-baseline"?: string;
 }) {
   return (
     <g>
       {values.map((value, column) => (
-        <text key={column} x={layout.ends[column]} text-anchor="end" {...attributes}>
+        <text
+          key={column}
+          x={layout.ends[column]}
+          text-anchor="end"
+          dominant-baseline="central"
+          {...attributes}
+        >
           {value}
         </text>
       ))}
       {layout.separators.map((x, column) => (
-        <text key={column} x={x} text-anchor="middle" {...attributes}>
+        <text key={column} x={x} text-anchor="middle" dominant-baseline="central" {...attributes}>
           /
         </text>
       ))}
@@ -348,8 +448,9 @@ function RepositoryBackground({
   max: number;
   segments: { count: number; color: string }[];
 }) {
-  const scale = 528 / Math.max(1, max);
-  let x = 16;
+  const left = padding - space.part;
+  const scale = (cardWidth - left * 2) / Math.max(1, max);
+  let x = left;
   return (
     <g opacity="0.18" aria-hidden="true">
       {segments.map((segment, index) => {
@@ -357,18 +458,79 @@ function RepositoryBackground({
         const start = x;
         x += width;
         return (
-          <rect key={index} x={start} y={y - 4} width={width} height="24" fill={segment.color} />
+          <rect
+            key={index}
+            x={start}
+            y={y}
+            width={width}
+            height={lineHeight.row}
+            fill={segment.color}
+          />
         );
       })}
     </g>
   );
 }
 
+function RepositoryName({
+  card,
+  repository,
+  width,
+  y,
+  size,
+  ...attributes
+}: {
+  card: CardName;
+  repository: string;
+  width: number;
+  y: number;
+  size: number;
+  fill: string;
+  "font-weight"?: string;
+}) {
+  return (
+    <text
+      x={labelX}
+      y={y}
+      dominant-baseline="central"
+      font-size={size}
+      clip-path={`url(#${card}-repository)`}
+      {...attributes}
+    >
+      {fitText(repository, width, size)}
+    </text>
+  );
+}
+function RepositoryClip({
+  card,
+  width,
+  height,
+}: {
+  card: CardName;
+  width: number;
+  height: number;
+}) {
+  return (
+    <defs>
+      <clipPath id={`${card}-repository`}>
+        <rect x={labelX} width={Math.max(0, width)} height={height} />
+      </clipPath>
+    </defs>
+  );
+}
+
 function Projects({ snapshot, colors }: CardProps) {
   const { myProjects } = snapshot;
   const rows = myProjects.topRepositories;
-  const height = 168 + Math.max(1, rows.length) * 28;
+  const sectionTop = contentTop + metricsHeight(2) + space.section;
+  const rowsTop = sectionTop + lineHeight.section + space.header;
+  const height = rowsTop + listHeight(Math.max(1, rows.length)) + footerHeight;
   const max = Math.max(1, ...rows.map((row) => row.commits));
+  const commitsWidth = Math.max(
+    0,
+    ...rows.map((row) => estimateTextWidth(number(row.commits), typography.repository)),
+  );
+  const nameWidth = contentRight - commitsWidth - space.group - labelX;
   return (
     <Card
       name="projects"
@@ -377,17 +539,10 @@ function Projects({ snapshot, colors }: CardProps) {
       updatedAt={snapshot.updatedAt}
       note="Qualifying commits to owned public non-forks; profile repository excluded; archived repositories included."
     >
-      <defs>
-        <clipPath id="projects-repository">
-          <rect
-            x={repositoryColumns.projects.x}
-            width={repositoryColumns.projects.width}
-            height={height}
-          />
-        </clipPath>
-      </defs>
+      <RepositoryClip card="projects" width={nameWidth} height={height} />
       <Metrics
         colors={colors}
+        top={contentTop}
         rows={[
           {
             label: "Commits",
@@ -403,54 +558,58 @@ function Projects({ snapshot, colors }: CardProps) {
           },
         ]}
       />
-      <text x="20" y="136" font-size={typography.section} font-weight="600" fill={colors.title}>
-        Most Active Repositories
-      </text>
-      <text
-        x={contentRight}
-        y="136"
-        text-anchor="end"
-        font-size={typography.meta}
-        fill={colors.muted}
-      >
-        Last 12 Months · commits
-      </text>
+      <SectionHeading
+        top={sectionTop}
+        title="Most Active Repositories"
+        meta="Last 12 Months · commits"
+        colors={colors}
+      />
       {rows.length === 0 ? (
-        <text x="20" y="162" font-size={typography.body} fill={colors.muted}>
+        <text
+          x={padding}
+          y={rowsTop + lineHeight.row / 2}
+          dominant-baseline="central"
+          font-size={typography.body}
+          fill={colors.muted}
+        >
           No qualifying commits in this period.
         </text>
       ) : (
-        rows.map((row, index) => (
-          <g key={row.repository}>
-            <title>
-              {row.repository}: {row.commits} commits
-            </title>
-            <RepositoryBackground
-              y={149 + index * 28}
-              max={max}
-              segments={[{ count: row.commits, color: colors.commit }]}
-            />
-            <Icon name="repo" x={20} y={149 + index * 28} color={colors.icon} />
-            <text
-              x={repositoryColumns.projects.x}
-              y={162 + index * 28}
-              font-size={typography.repository}
-              fill={colors.text}
-              clip-path="url(#projects-repository)"
-            >
-              {fitText(row.repository, repositoryColumns.projects.width, typography.repository)}
-            </text>
-            <text
-              x={contentRight}
-              y={162 + index * 28}
-              text-anchor="end"
-              font-size={typography.repository}
-              fill={colors.value}
-            >
-              {number(row.commits)}
-            </text>
-          </g>
-        ))
+        rows.map((row, index) => {
+          const y = rowTop(rowsTop, index);
+          const centerY = y + lineHeight.row / 2;
+          return (
+            <g key={row.repository}>
+              <title>
+                {row.repository}: {row.commits} commits
+              </title>
+              <RepositoryBackground
+                y={y}
+                max={max}
+                segments={[{ count: row.commits, color: colors.commit }]}
+              />
+              <Icon name="repo" x={padding} y={centerY - rowIconSize / 2} color={colors.icon} />
+              <RepositoryName
+                card="projects"
+                repository={row.repository}
+                width={nameWidth}
+                y={centerY}
+                size={typography.repository}
+                fill={colors.text}
+              />
+              <text
+                x={contentRight}
+                y={centerY}
+                text-anchor="end"
+                dominant-baseline="central"
+                font-size={typography.repository}
+                fill={colors.value}
+              >
+                {number(row.commits)}
+              </text>
+            </g>
+          );
+        })
       )}
     </Card>
   );
@@ -467,15 +626,35 @@ function External({ snapshot, colors }: CardProps) {
     commits: "Commits",
     activeRepositories: "Active Repositories",
   };
-  const height = 289 + Math.max(1, rows.length) * 28;
+  const keys = Object.keys(labels) as (keyof typeof labels)[];
+  const sectionTop = contentTop + metricsHeight(keys.length) + space.section;
+  // The legend explains the heading's table, so the two lines form one header.
+  const legendTop = sectionTop + lineHeight.section + space.part;
+  const legendY = legendTop + lineHeight.legend / 2;
+  const rowsTop = legendTop + lineHeight.legend + space.header;
+  const height = rowsTop + listHeight(Math.max(1, rows.length)) + footerHeight;
   const max = Math.max(1, ...rows.map((row) => row.prs + row.reviews + row.issues));
   const countLayout = separatedColumns(
     rows.map((row) => [row.prs, row.reviews, row.issues]),
     valueColumns.last12Months,
     typography.body,
   );
-  const ossRepositoryX = 42;
-  const nameWidth = valueColumns.last12Months - countLayout.width - 16 - ossRepositoryX;
+  const nameWidth = valueColumns.last12Months - countLayout.width - space.group - labelX;
+  let legendX = padding;
+  const legend = (
+    [
+      { label: "PRs", color: colors.pr, icon: "pr" },
+      { label: "Reviews", color: colors.review, icon: "review" },
+      { label: "Issues", color: colors.issue, icon: "issue" },
+    ] satisfies { label: string; color: string; icon: IconName }[]
+  ).map((item) => {
+    const iconX = legendX;
+    const textX = iconX + legendIconSize + space.part;
+    legendX = textX + estimateTextWidth(item.label, typography.meta) + space.sibling;
+    return { ...item, iconX, textX };
+  });
+  const commitsLabelX =
+    valueColumns.allTime - estimateTextWidth("Commits", typography.meta) - space.part;
   return (
     <Card
       name="oss"
@@ -484,72 +663,84 @@ function External({ snapshot, colors }: CardProps) {
       updatedAt={snapshot.updatedAt}
       note="External public repositories. Ranking = PRs + Reviews + Issues; commits are reference values only."
     >
-      <defs>
-        <clipPath id="oss-repository">
-          <rect x={ossRepositoryX} width={Math.max(0, nameWidth)} height={height} />
-        </clipPath>
-      </defs>
+      <RepositoryClip card="oss" width={nameWidth} height={height} />
       <Metrics
         colors={colors}
-        rows={(Object.keys(labels) as (keyof typeof labels)[]).map((key) => ({
+        top={contentTop}
+        rows={keys.map((key) => ({
           label: labels[key],
           icon: metricIcons[key],
           last12Months: oss.last12Months[key],
           allTime: oss.allTime[key],
         }))}
       />
-      <text x="20" y="232" font-size={typography.section} font-weight="600" fill={colors.title}>
-        Most Active Repositories
-      </text>
-      <text
-        x={contentRight}
-        y="232"
-        text-anchor="end"
-        font-size={typography.meta}
-        fill={colors.muted}
-      >
-        Last 12 Months · activity count
-      </text>
-      {(
-        [
-          { label: "PRs", color: colors.pr, icon: "pr" },
-          { label: "Reviews", color: colors.review, icon: "review" },
-          { label: "Issues", color: colors.issue, icon: "issue" },
-        ] satisfies { label: string; color: string; icon: IconName }[]
-      ).map(({ label, color, icon }, index) => (
+      <SectionHeading
+        top={sectionTop}
+        title="Most Active Repositories"
+        meta="Last 12 Months · activity count"
+        colors={colors}
+      />
+      {legend.map(({ label, color, icon, iconX, textX }) => (
         <g key={label}>
-          <Icon name={icon} x={20 + index * 88} y={244} size={14} color={color} />
-          <text x={42 + index * 88} y="255" font-size={typography.meta} fill={colors.muted}>
+          <Icon
+            name={icon}
+            x={iconX}
+            y={legendY - legendIconSize / 2}
+            size={legendIconSize}
+            color={color}
+          />
+          <text
+            x={textX}
+            y={legendY}
+            dominant-baseline="central"
+            font-size={typography.meta}
+            fill={colors.muted}
+          >
             {label}
           </text>
         </g>
       ))}
       <text
         x={valueColumns.last12Months}
-        y="255"
+        y={legendY}
         text-anchor="end"
+        dominant-baseline="central"
         font-size={typography.meta}
         fill={colors.muted}
       >
         PRs / Reviews / Issues
       </text>
-      <Icon name="commit" x={479} y={244} size={13} color={colors.commit} />
+      <Icon
+        name="commit"
+        x={commitsLabelX - legendIconSize}
+        y={legendY - legendIconSize / 2}
+        size={legendIconSize}
+        color={colors.commit}
+      />
       <text
-        x={contentRight}
-        y="255"
+        x={valueColumns.allTime}
+        y={legendY}
         text-anchor="end"
+        dominant-baseline="central"
         font-size={typography.meta}
         fill={colors.muted}
       >
         Commits
       </text>
       {rows.length === 0 ? (
-        <text x="20" y="283" font-size={typography.body} fill={colors.muted}>
+        <text
+          x={padding}
+          y={rowsTop + lineHeight.row / 2}
+          dominant-baseline="central"
+          font-size={typography.body}
+          fill={colors.muted}
+        >
           No PR, review or issue contributions in this period.
         </text>
       ) : (
         rows.map((row, index) => {
-          const y = 270 + index * 28;
+          const y = rowTop(rowsTop, index);
+          const centerY = y + lineHeight.row / 2;
           return (
             <g key={row.repository}>
               <title>
@@ -565,27 +756,27 @@ function External({ snapshot, colors }: CardProps) {
                   { count: row.issues, color: colors.issue },
                 ]}
               />
-              <Icon name="repo" x={20} y={y} color={colors.icon} />
-              <text
-                x={ossRepositoryX}
-                y={y + 13}
-                font-size={typography.repository}
+              <Icon name="repo" x={padding} y={centerY - rowIconSize / 2} color={colors.icon} />
+              <RepositoryName
+                card="oss"
+                repository={row.repository}
+                width={nameWidth}
+                y={centerY}
+                size={typography.repository}
                 fill={colors.text}
-                clip-path="url(#oss-repository)"
-              >
-                {fitText(row.repository, nameWidth, typography.repository)}
-              </text>
+              />
               <SeparatedCounts
                 values={[row.prs, row.reviews, row.issues]}
                 layout={countLayout}
-                y={y + 13}
+                y={centerY}
                 font-size={typography.body}
                 fill={colors.value}
               />
               <text
                 x={valueColumns.allTime}
-                y={y + 13}
+                y={centerY}
                 text-anchor="end"
+                dominant-baseline="central"
                 font-size={typography.body}
                 fill={colors.muted}
               >
@@ -602,14 +793,37 @@ function External({ snapshot, colors }: CardProps) {
 function Recent({ snapshot, colors, languageOverride }: CardProps) {
   const recent = snapshot.recentRepositories;
   const rows = recent?.repositories ?? [];
-  const rowHeight = 66;
-  const rowsTop = 65;
-  const height = rowsTop + Math.max(1, rows.length) * rowHeight + 20;
+  const headerY = contentTop + lineHeight.legend / 2;
+  const rowsTop = contentTop + lineHeight.legend + space.header;
+  // Every entry keeps the three-line height so the card height is predictable. The text block
+  // and the counts are centred on the entry; these box heights keep all of their offsets
+  // (0, 12 and 20 px) on the 4 px grid, with or without a description.
+  const twoLineHeight = lineHeight.recentName + space.part + lineHeight.meta;
+  const recordHeight = twoLineHeight + lineHeight.line + space.part;
+  const records = rows.map((row, index) => ({
+    row,
+    description: row.description?.trim(),
+    top: rowsTop + index * (recordHeight + space.group),
+  }));
+  const contentHeight = !recent
+    ? lineHeight.body * 2 + space.part
+    : rows.length === 0
+      ? lineHeight.body
+      : rows.length * recordHeight + (rows.length - 1) * space.group;
+  const height = rowsTop + contentHeight + footerHeight;
   const countLayout = separatedColumns(
     rows.map((row) => [row.mergedPullRequests, row.reviews]),
     contentRight,
     typography.recentRepository,
   );
+  const nameWidth = contentRight - countLayout.width - space.group - labelX;
+  const descriptionWidth = contentRight - countLayout.width - space.group - padding;
+  const reviewedX = contentRight - estimateTextWidth("Reviewed PRs", typography.meta);
+  const reviewedIconX = reviewedX - space.part - legendIconSize;
+  const slashX = reviewedIconX - space.part;
+  const mergedRight = slashX - estimateTextWidth("/", typography.meta) - space.part;
+  const mergedIconX =
+    mergedRight - estimateTextWidth("Merged PRs", typography.meta) - space.part - legendIconSize;
   return (
     <Card
       name="recent"
@@ -618,51 +832,105 @@ function Recent({ snapshot, colors, languageOverride }: CardProps) {
       updatedAt={snapshot.updatedAt}
       note="Last 90 days · Reviews count distinct PRs. Repo language describes the repository, not your changes."
     >
-      <defs>
-        <clipPath id="recent-repository">
-          <rect
-            x={repositoryColumns.recent.x}
-            width={repositoryColumns.recent.width}
-            height={height}
-          />
-        </clipPath>
-      </defs>
-      <text x="20" y="56" font-size={typography.meta} fill={colors.muted}>
+      <RepositoryClip card="recent" width={nameWidth} height={height} />
+      <text
+        x={padding}
+        y={headerY}
+        dominant-baseline="central"
+        font-size={typography.meta}
+        fill={colors.muted}
+      >
         {recent
           ? `Last 90 days · ${recent.from.slice(0, 10)} — ${recent.to.slice(0, 10)}`
           : "Awaiting updated collection"}
       </text>
-      <Icon name="merged" x={327} y={45} size={13} color={colors.merged} />
-      <text x="344" y="56" font-size={typography.meta} fill={colors.muted}>
+      <Icon
+        name="merged"
+        x={mergedIconX}
+        y={headerY - legendIconSize / 2}
+        size={legendIconSize}
+        color={colors.merged}
+      />
+      <text
+        x={mergedRight}
+        y={headerY}
+        text-anchor="end"
+        dominant-baseline="central"
+        font-size={typography.meta}
+        fill={colors.muted}
+      >
         Merged PRs
       </text>
-      <text x="413" y="56" font-size={typography.meta} fill={colors.muted}>
+      <text
+        x={slashX}
+        y={headerY}
+        text-anchor="end"
+        dominant-baseline="central"
+        font-size={typography.meta}
+        fill={colors.muted}
+      >
         /
       </text>
-      <Icon name="review" x={429} y={45} size={13} color={colors.review} />
-      <text x="446" y="56" font-size={typography.meta} fill={colors.muted}>
+      <Icon
+        name="review"
+        x={reviewedIconX}
+        y={headerY - legendIconSize / 2}
+        size={legendIconSize}
+        color={colors.review}
+      />
+      <text
+        x={reviewedX}
+        y={headerY}
+        dominant-baseline="central"
+        font-size={typography.meta}
+        fill={colors.muted}
+      >
         Reviewed PRs
       </text>
       {!recent ? (
         <g>
-          <text x="20" y="95" font-size={typography.body} fill={colors.muted}>
+          <text
+            x={padding}
+            y={rowsTop + lineHeight.body / 2}
+            dominant-baseline="central"
+            font-size={typography.body}
+            fill={colors.muted}
+          >
             Repository activity needs a new collection.
           </text>
-          <text x="20" y="116" font-size={typography.body} fill={colors.muted}>
+          <text
+            x={padding}
+            y={rowsTop + lineHeight.body + space.part + lineHeight.body / 2}
+            dominant-baseline="central"
+            font-size={typography.body}
+            fill={colors.muted}
+          >
             Existing totals remain available.
           </text>
         </g>
       ) : rows.length === 0 ? (
-        <text x="20" y="95" font-size={typography.body} fill={colors.muted}>
+        <text
+          x={padding}
+          y={rowsTop + lineHeight.body / 2}
+          dominant-baseline="central"
+          font-size={typography.body}
+          fill={colors.muted}
+        >
           No merged PRs or reviews in the last 90 days.
         </text>
       ) : (
-        rows.map((row, index) => {
-          const description = row.description?.trim();
-          const centerY = rowsTop + (index + 0.5) * rowHeight;
-          const nameY = centerY - (description ? 18 : 10);
-          const languageY = centerY + (description ? 18 : 10);
-          const descriptionWidth = contentRight - 20 - countLayout.width - 16;
+        records.map(({ row, description, top }, index) => {
+          const centerY = top + recordHeight / 2;
+          const blockTop = description ? top : top + (recordHeight - twoLineHeight) / 2;
+          const nameY = blockTop + lineHeight.recentName / 2;
+          const descriptionTop = blockTop + lineHeight.recentName + space.part;
+          const languageY = description
+            ? descriptionTop + lineHeight.line + space.part + lineHeight.meta / 2
+            : descriptionTop + lineHeight.meta / 2;
+          // Hangs below the centred counts rather than sharing the language line, which moves up
+          // for two-line entries; the gap lines it up with the language of three-line entries.
+          const lastActivityY =
+            centerY + lineHeight.recentName / 2 + space.sibling + lineHeight.meta / 2;
           const descriptionClip = `recent-description-${index}`;
           return (
             <g key={row.repository}>
@@ -671,27 +939,26 @@ function Recent({ snapshot, colors, languageOverride }: CardProps) {
                 {description ? `: ${description}` : ""}; {row.mergedPullRequests} merged PRs,{" "}
                 {row.reviews} reviewed PRs
               </title>
-              <Icon name="repo" x={20} y={nameY - 8} size={16} color={colors.accent} />
-              <text
-                x={repositoryColumns.recent.x}
+              <Icon
+                name="repo"
+                x={padding}
+                y={nameY - rowIconSize / 2}
+                size={rowIconSize}
+                color={colors.accent}
+              />
+              <RepositoryName
+                card="recent"
+                repository={row.repository}
+                width={nameWidth}
                 y={nameY}
-                dominant-baseline="central"
-                font-size={typography.recentRepository}
+                size={typography.recentRepository}
                 font-weight="600"
                 fill={colors.accent}
-                clip-path="url(#recent-repository)"
-              >
-                {fitText(
-                  row.repository,
-                  repositoryColumns.recent.width,
-                  typography.recentRepository,
-                )}
-              </text>
+              />
               <SeparatedCounts
                 values={[row.mergedPullRequests, row.reviews]}
                 layout={countLayout}
                 y={centerY}
-                dominant-baseline="central"
                 font-size={typography.recentRepository}
                 fill={colors.value}
               />
@@ -700,16 +967,16 @@ function Recent({ snapshot, colors, languageOverride }: CardProps) {
                   <defs>
                     <clipPath id={descriptionClip}>
                       <rect
-                        x="20"
-                        y={centerY - 10}
-                        width={Math.max(0, descriptionWidth)}
-                        height="20"
+                        x={padding}
+                        y={descriptionTop}
+                        width={descriptionWidth}
+                        height={lineHeight.line}
                       />
                     </clipPath>
                   </defs>
                   <text
-                    x="20"
-                    y={centerY}
+                    x={padding}
+                    y={descriptionTop + lineHeight.line / 2}
                     clip-path={`url(#${descriptionClip})`}
                     dominant-baseline="central"
                     font-size={typography.body}
@@ -722,13 +989,13 @@ function Recent({ snapshot, colors, languageOverride }: CardProps) {
               {row.primaryLanguage ? (
                 <g>
                   <circle
-                    cx="25"
+                    cx={padding + space.part}
                     cy={languageY}
-                    r="4"
+                    r={space.part}
                     fill={languageOverride ?? row.primaryLanguage.color ?? colors.language}
                   />
                   <text
-                    x="37"
+                    x={padding + space.part * 3}
                     y={languageY}
                     dominant-baseline="central"
                     font-size={typography.meta}
@@ -739,7 +1006,7 @@ function Recent({ snapshot, colors, languageOverride }: CardProps) {
                 </g>
               ) : (
                 <text
-                  x="20"
+                  x={padding}
                   y={languageY}
                   dominant-baseline="central"
                   font-size={typography.meta}
@@ -750,7 +1017,7 @@ function Recent({ snapshot, colors, languageOverride }: CardProps) {
               )}
               <text
                 x={contentRight}
-                y={centerY + 18}
+                y={lastActivityY}
                 dominant-baseline="central"
                 text-anchor="end"
                 font-size={typography.meta}
@@ -758,12 +1025,12 @@ function Recent({ snapshot, colors, languageOverride }: CardProps) {
               >
                 Last activity {row.lastActivityAt.slice(0, 10)}
               </text>
-              {index < rows.length - 1 && (
+              {index < records.length - 1 && (
                 <line
-                  x1="20"
+                  x1={padding}
                   x2={contentRight}
-                  y1={centerY + rowHeight / 2}
-                  y2={centerY + rowHeight / 2}
+                  y1={top + recordHeight + space.group / 2}
+                  y2={top + recordHeight + space.group / 2}
                   stroke={colors.border}
                 />
               )}
@@ -781,14 +1048,16 @@ export function renderCard(snapshot: Snapshot, name: CardName, appearance = reso
   return `<?xml version="1.0" encoding="UTF-8"?>\n${(<Component snapshot={snapshot} colors={appearance.colors} languageOverride={appearance.overrides.language} />).toString()}`;
 }
 
+const pendingHeight = contentTop + lineHeight.body * 2 + space.part + padding;
+
 export function renderPendingCard(name: CardName, appearance = resolveTheme()) {
   const colors = appearance.colors;
   return `<?xml version="1.0" encoding="UTF-8"?>\n${(
     <svg
       xmlns="http://www.w3.org/2000/svg"
       width={cardWidth}
-      height="112"
-      viewBox={`0 0 ${cardWidth} 112`}
+      height={pendingHeight}
+      viewBox={`0 0 ${cardWidth} ${pendingHeight}`}
       role="img"
       font-family={fontFamily}
     >
@@ -797,20 +1066,35 @@ export function renderPendingCard(name: CardName, appearance = resolveTheme()) {
         x="0.5"
         y="0.5"
         width={cardWidth - 1}
-        height="111"
+        height={pendingHeight - 1}
         rx="14"
         fill={colors.background}
         stroke={colors.border}
       />
-      <text x="20" y="32" font-size={typography.title} font-weight="700" fill={colors.title}>
+      <text
+        x={padding}
+        y={padding + lineHeight.title / 2}
+        dominant-baseline="central"
+        font-size={typography.title}
+        font-weight="700"
+        fill={colors.title}
+      >
         {cardTitles[name]}
       </text>
-      <text x="20" y="64" font-size={typography.body} fill={colors.muted}>
-        Preparing statistics.
-      </text>
-      <text x="20" y="86" font-size={typography.body} fill={colors.muted}>
-        Please check again after the next successful update.
-      </text>
+      {["Preparing statistics.", "Please check again after the next successful update."].map(
+        (line, index) => (
+          <text
+            key={line}
+            x={padding}
+            y={contentTop + index * (lineHeight.body + space.part) + lineHeight.body / 2}
+            dominant-baseline="central"
+            font-size={typography.body}
+            fill={colors.muted}
+          >
+            {line}
+          </text>
+        ),
+      )}
     </svg>
   ).toString()}`;
 }
