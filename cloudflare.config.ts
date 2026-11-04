@@ -11,6 +11,7 @@ export default defineConfig({
     compatibilityDate: "2026-10-01",
     entrypoint,
     cache: { enabled: true },
+    observability: { enabled: true },
     triggers: [triggers.scheduled({ schedule: refreshSchedule })],
     exports: {
       ProfileRefresh: workerExports.workflow({
