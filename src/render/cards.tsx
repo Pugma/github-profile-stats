@@ -16,6 +16,7 @@ export const cardTitles: Record<CardName, string> = {
 };
 type CardProps = { snapshot: Snapshot; colors: Palette; languageOverride?: string };
 const cardWidth = 560;
+const displayWidth = 360;
 const fontFamily = "Arial, Helvetica, sans-serif";
 const padding = 20;
 const contentRight = cardWidth - padding;
@@ -87,8 +88,8 @@ function Card({
   return (
     <svg
       xmlns="http://www.w3.org/2000/svg"
-      width={cardWidth}
-      height={height}
+      width={displayWidth}
+      height={(height * displayWidth) / cardWidth}
       viewBox={`0 0 ${cardWidth} ${height}`}
       role="img"
       aria-labelledby={`${name}-title ${name}-description`}
@@ -1056,8 +1057,8 @@ export function renderPendingCard(name: CardName, appearance = resolveTheme()) {
   return `<?xml version="1.0" encoding="UTF-8"?>\n${(
     <svg
       xmlns="http://www.w3.org/2000/svg"
-      width={cardWidth}
-      height={pendingHeight}
+      width={displayWidth}
+      height={(pendingHeight * displayWidth) / cardWidth}
       viewBox={`0 0 ${cardWidth} ${pendingHeight}`}
       role="img"
       font-family={fontFamily}
@@ -1128,7 +1129,7 @@ export function renderGallery(appearance: Appearance = resolveTheme(), basePath 
           <meta charset="utf-8" />
           <meta name="viewport" content="width=device-width, initial-scale=1" />
           <title>GitHub Profile Statistics — Preview</title>
-          <style>{`body{margin:0;background:${colors.pageBackground};color:${colors.text};font-family:${fontFamily}}main{max-width:1140px;margin:32px auto;padding:0 20px}h1{font-size:28px;margin:0 0 10px;color:${colors.title}}p{color:${colors.muted};margin:0 0 20px}.cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,${cardWidth}px),1fr));gap:20px;align-items:start}article{min-width:0;max-width:${cardWidth}px}h2{font-size:15px;margin:0 0 10px}img{display:block;width:100%;height:auto}a{color:${colors.accent};text-decoration:none}.controls{border:1px solid ${colors.border};background:${colors.background};border-radius:12px;padding:16px;margin-bottom:24px}.preset{display:flex;gap:12px;align-items:center;flex-wrap:wrap}select,button{font:inherit;color:${colors.text};background:${colors.background};border:1px solid ${colors.border};border-radius:6px;padding:7px 12px}button{cursor:pointer}summary{cursor:pointer;color:${colors.title};margin:16px 0}.tokens{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px;margin:12px 0 18px}.token{display:flex;align-items:center;gap:10px;font-size:13px}.token span{display:grid;gap:3px}.token code{color:${colors.muted};font-size:11px}input[type=color]{width:40px;height:32px;padding:2px;background:${colors.background};border:1px solid ${colors.border};border-radius:5px}.actions{display:flex;gap:16px;align-items:center;flex-wrap:wrap}`}</style>
+          <style>{`body{margin:0;background:${colors.pageBackground};color:${colors.text};font-family:${fontFamily}}main{max-width:1140px;margin:32px auto;padding:0 20px}h1{font-size:28px;margin:0 0 10px;color:${colors.title}}p{color:${colors.muted};margin:0 0 20px}.cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,${displayWidth}px),1fr));gap:20px;align-items:start}article{min-width:0;max-width:${displayWidth}px}h2{font-size:15px;margin:0 0 10px}img{display:block;width:100%;height:auto}a{color:${colors.accent};text-decoration:none}.controls{border:1px solid ${colors.border};background:${colors.background};border-radius:12px;padding:16px;margin-bottom:24px}.preset{display:flex;gap:12px;align-items:center;flex-wrap:wrap}select,button{font:inherit;color:${colors.text};background:${colors.background};border:1px solid ${colors.border};border-radius:6px;padding:7px 12px}button{cursor:pointer}summary{cursor:pointer;color:${colors.title};margin:16px 0}.tokens{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px;margin:12px 0 18px}.token{display:flex;align-items:center;gap:10px;font-size:13px}.token span{display:grid;gap:3px}.token code{color:${colors.muted};font-size:11px}input[type=color]{width:40px;height:32px;padding:2px;background:${colors.background};border:1px solid ${colors.border};border-radius:5px}.actions{display:flex;gap:16px;align-items:center;flex-wrap:wrap}`}</style>
         </head>
         <body>
           <main>
@@ -1199,7 +1200,7 @@ export function renderGallery(appearance: Appearance = resolveTheme(), basePath 
                   <img
                     src={`${basePath}${name}.svg?${query}`}
                     alt={cardTitles[name]}
-                    width={cardWidth}
+                    width={displayWidth}
                   />
                 </article>
               ))}

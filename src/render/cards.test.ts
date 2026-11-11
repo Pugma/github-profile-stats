@@ -8,6 +8,24 @@ import { svgElements, svgGroup, svgText } from "../../fixtures/svg.ts";
 
 const snapshot = buildSnapshot(snapshotInput());
 
+test.each(cardNames)("%s scales to 360 px wide while preserving its aspect ratio", (name) => {
+  const empty = structuredClone(snapshot);
+  empty.myProjects.topRepositories = [];
+  empty.oss.topRepositories = [];
+  empty.recentRepositories!.repositories = [];
+  for (const svg of [
+    renderCard(snapshot, name),
+    renderCard(empty, name),
+    renderPendingCard(name),
+  ]) {
+    const { width, height, viewBox } = svgElements(svg, "svg")[0].attributes;
+    const [, , layoutWidth, layoutHeight] = viewBox.split(" ").map(Number);
+    assert.equal(Number(width), 360);
+    assert.equal(layoutWidth, 560);
+    assert.ok(Math.abs(Number(height) / Number(width) - layoutHeight / layoutWidth) < 1e-10);
+  }
+});
+
 test.each(cardNames)("%s renders a static SVG with a data update time", (name) => {
   const svg = renderCard(snapshot, name);
   assert.match(svg, /^<\?xml[^>]+>\n<svg/);
@@ -287,6 +305,15 @@ test("gallery references only the four same-origin card URLs", () => {
   assert.doesNotMatch(html, /<script|https:\/\//);
 });
 
+test("gallery displays cards at 360 px wide with responsive height", () => {
+  const html = renderGallery();
+  const images = svgElements(html, "img");
+  assert.equal(images.length, cardNames.length);
+  assert.ok(images.every((image) => image.attributes.width === "360"));
+  assert.match(html, /article\{[^}]*max-width:360px/);
+  assert.match(html, /img\{[^}]*width:100%;height:auto/);
+});
+
 test("gallery links and theme forms stay under an alternate card path", () => {
   const html = renderGallery(undefined, "/cards/");
   for (const name of cardNames) assert.ok(html.includes(`src="/cards/${name}.svg?theme=light"`));
@@ -336,10 +363,12 @@ test("OSS ranking columns line up under the Last 12 Months and All Time columns"
   }
 });
 
-test("card heights stay on the 4 px grid", () => {
+test("card layout heights stay on the 4 px grid", () => {
   for (const name of cardNames) {
-    assert.equal(svgHeight(renderCard(snapshot, name)) % 4, 0, name);
-    assert.equal(svgHeight(renderPendingCard(name)) % 4, 0, name);
+    for (const svg of [renderCard(snapshot, name), renderPendingCard(name)]) {
+      const layoutHeight = Number(svgElements(svg, "svg")[0].attributes.viewBox.split(" ")[3]);
+      assert.equal(layoutHeight % 4, 0, name);
+    }
   }
 });
 
