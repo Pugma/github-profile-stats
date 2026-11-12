@@ -2,9 +2,22 @@
   "$schema": "./node_modules/oxlint/configuration_schema.json",
   "plugins": ["typescript", "unicorn", "oxc"],
   "categories": {
-    "correctness": "error"
+    "correctness": "error",
+    "restriction": "error"
   },
-  "rules": {},
+  "rules": {
+    "complexity": "allow",
+    "no-plusplus": "allow",
+    "no-undefined": "allow",
+    "no-use-before-define": "allow",
+    "oxc/no-async-await": "allow",
+    "oxc/no-optional-chaining": "allow",
+    "oxc/no-rest-spread-properties": "allow",
+    "typescript/explicit-function-return-type": "allow",
+    "typescript/explicit-member-accessibility": "allow",
+    "typescript/explicit-module-boundary-types": "allow",
+    "typescript/no-non-null-assertion": "allow"
+  },
   "env": {
     "builtin": true
   }
