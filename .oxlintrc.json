@@ -9,7 +9,6 @@
     "complexity": "allow",
     "no-plusplus": "allow",
     "no-undefined": "allow",
-    "no-use-before-define": "allow",
     "oxc/no-async-await": "allow",
     "oxc/no-optional-chaining": "allow",
     "oxc/no-rest-spread-properties": "allow",

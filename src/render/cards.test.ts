@@ -9,6 +9,7 @@ import { cardNames, renderCard, renderGallery, renderPendingCard } from "./cards
 import { estimateTextWidth } from "./text.ts";
 
 const snapshot = buildSnapshot(snapshotInput());
+const svgHeight = (svg: string) => Number(svgElements(svg, "svg")[0].attributes.height);
 
 test.each(cardNames)("%s uses a 360 px layout at its original height", (name) => {
   const empty = structuredClone(snapshot);
@@ -204,7 +205,6 @@ test.each([
   },
 );
 
-const svgHeight = (svg: string) => Number(svgElements(svg, "svg")[0].attributes.height);
 function fiveRowProjectsHeight() {
   const input = structuredClone(snapshot);
   const [first] = input.myProjects.topRepositories;

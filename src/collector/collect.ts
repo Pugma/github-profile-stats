@@ -67,6 +67,15 @@ export type CollectOptions = {
   steps?: { do<T>(name: string, callback: () => Promise<T>): Promise<T> };
 };
 
+export function collectionError(error: unknown) {
+  const message = error instanceof Error ? error.message : "";
+  return /^(Invalid public statistics snapshot|Invalid GitHub login|GitHub collection HTTP \d+|Incomplete GitHub GraphQL collection|Public-repositories-only GitHub token required|GitHub collection user not found|Invalid contribution years|Restricted contribution totals require separate public-visibility verification|Incomplete commit repository groups|Non-public commit contribution rejected|Incomplete public commit contributions|Review collection changed during pagination|Non-public review contribution rejected|Duplicate review contribution page|Incomplete review identity|Duplicate authored activity page|Incomplete public review contributions|Search interval exceeds 1000 results; collection incomplete|Search collection changed during pagination|Non-public or incomplete authored activity rejected|Incomplete authored activity pagination|Incomplete public repository metadata|Pagination did not advance)$/.test(
+    message,
+  )
+    ? message
+    : "Statistics collection failed; upstream details omitted";
+}
+
 export async function collectSnapshot({
   login,
   token,
@@ -368,13 +377,4 @@ export async function collectSnapshot({
   if (avatarDataUrl) snapshot.avatarDataUrl = avatarDataUrl;
   validateSnapshot(snapshot);
   return { snapshot, metrics: { ...metrics, wallMs: performance.now() - startedAt } };
-}
-
-export function collectionError(error: unknown) {
-  const message = error instanceof Error ? error.message : "";
-  return /^(Invalid public statistics snapshot|Invalid GitHub login|GitHub collection HTTP \d+|Incomplete GitHub GraphQL collection|Public-repositories-only GitHub token required|GitHub collection user not found|Invalid contribution years|Restricted contribution totals require separate public-visibility verification|Incomplete commit repository groups|Non-public commit contribution rejected|Incomplete public commit contributions|Review collection changed during pagination|Non-public review contribution rejected|Duplicate review contribution page|Incomplete review identity|Duplicate authored activity page|Incomplete public review contributions|Search interval exceeds 1000 results; collection incomplete|Search collection changed during pagination|Non-public or incomplete authored activity rejected|Incomplete authored activity pagination|Incomplete public repository metadata|Pagination did not advance)$/.test(
-    message,
-  )
-    ? message
-    : "Statistics collection failed; upstream details omitted";
 }
