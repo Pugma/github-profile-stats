@@ -1,4 +1,4 @@
 allowBuilds:
-  workerd: true
+  workerd: false
 minimumReleaseAge: 4320
 minimumReleaseAgeExcludePrune: true
