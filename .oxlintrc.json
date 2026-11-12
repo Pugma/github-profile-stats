@@ -14,9 +14,14 @@
     "oxc/no-rest-spread-properties": "allow",
     "typescript/explicit-function-return-type": "allow",
     "typescript/explicit-member-accessibility": "allow",
-    "typescript/explicit-module-boundary-types": "allow",
-    "typescript/no-non-null-assertion": "allow"
+    "typescript/explicit-module-boundary-types": "allow"
   },
+  "overrides": [
+    {
+      "files": ["**/*.test.ts", "fixtures/**"],
+      "rules": { "typescript/no-non-null-assertion": "allow" }
+    }
+  ],
   "env": {
     "builtin": true
   }

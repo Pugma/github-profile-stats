@@ -183,7 +183,7 @@ export function buildSnapshot(input: SnapshotInput): Snapshot {
     const row = recentRepository(review.repository, review.submittedAt);
     if (row) row.reviews++;
   }
-  const snapshot: Snapshot = {
+  const snapshot = {
     schemaVersion: 2,
     user: input.login,
     updatedAt: input.updatedAt,
@@ -218,7 +218,7 @@ export function buildSnapshot(input: SnapshotInput): Snapshot {
         )
         .slice(0, 5),
     },
-  };
+  } satisfies Snapshot;
   validateSnapshot(snapshot);
   return snapshot;
 }

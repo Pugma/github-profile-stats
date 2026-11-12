@@ -13,7 +13,8 @@ function advance(grapheme: string) {
   const base = Array.from(grapheme.normalize("NFD")).find((point) => !/\p{Mark}/u.test(point));
   if (!base) return 0;
   if (/\s/u.test(base)) return 278;
-  const code = base.codePointAt(0)!;
+  const code = base.codePointAt(0);
+  if (code === undefined) return 0;
   if (code >= 32 && code <= 126) return latinAdvances[code - 32];
   if (base === "…") return 1000;
   return code >= 0x2e80 ? 1050 : 750;

@@ -334,7 +334,7 @@ export async function collectSnapshot({
       issues,
     }),
   );
-  const recent = snapshot.recentRepositories!.repositories;
+  const recent = snapshot.recentRepositories.repositories;
   if (recent.length) {
     const repositories = await step("displayed-repository-metadata", async () => {
       // Fetch metadata only for displayed repositories, rather than every historical contribution.
@@ -374,7 +374,10 @@ export async function collectSnapshot({
     }
   }
   const avatarDataUrl = await step("avatar", async () => (await avatar(avatarUrl)) ?? null);
-  if (avatarDataUrl) snapshot.avatarDataUrl = avatarDataUrl;
-  validateSnapshot(snapshot);
-  return { snapshot, metrics: { ...metrics, wallMs: performance.now() - startedAt } };
+  const finalSnapshot = avatarDataUrl ? { ...snapshot, avatarDataUrl } : snapshot;
+  validateSnapshot(finalSnapshot);
+  return {
+    snapshot: finalSnapshot,
+    metrics: { ...metrics, wallMs: performance.now() - startedAt },
+  };
 }
