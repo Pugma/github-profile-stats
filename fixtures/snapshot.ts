@@ -1,5 +1,5 @@
-import type { Repository } from "../src/collector/collection-helpers.ts";
 import type { SnapshotInput } from "../src/collector/aggregate.ts";
+import type { Repository } from "../src/collector/collection-helpers.ts";
 
 export const fixtureTo = new Date("2026-10-26T07:15:00Z");
 export const fixtureFrom = "2025-10-26T07:15:00.000Z";

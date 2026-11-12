@@ -1,8 +1,9 @@
 import { WorkflowEntrypoint } from "cloudflare:workers";
 import type { WorkflowEvent, WorkflowStep } from "cloudflare:workers";
+
+import { purgeCardCache } from "../render/cards-handler.ts";
 import { runRefresh } from "./refresh-run.ts";
 import type { RefreshBindings } from "./refresh-run.ts";
-import { purgeCardCache } from "../render/cards-handler.ts";
 
 type RefreshParams = { scheduledTime?: number };
 

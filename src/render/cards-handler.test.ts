@@ -1,11 +1,13 @@
 import assert from "node:assert/strict";
+
 import { test, vi } from "vitest";
-import { purgeCardCache, serveCards } from "./cards-handler.ts";
-import { SNAPSHOT_KEY } from "../stats/storage.ts";
-import { buildSnapshot } from "../collector/aggregate.ts";
-import { snapshotInput } from "../../fixtures/snapshot.ts";
+
 import { assertCardSecurityHeaders } from "../../fixtures/security-headers.ts";
+import { snapshotInput } from "../../fixtures/snapshot.ts";
 import { svgGroup, svgText } from "../../fixtures/svg.ts";
+import { buildSnapshot } from "../collector/aggregate.ts";
+import { SNAPSHOT_KEY } from "../stats/storage.ts";
+import { purgeCardCache, serveCards } from "./cards-handler.ts";
 
 const snapshot = buildSnapshot(snapshotInput());
 const now = Date.parse(snapshot.period.to);

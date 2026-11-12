@@ -1,11 +1,13 @@
 import assert from "node:assert/strict";
+
 import { afterEach, beforeEach, test, vi } from "vitest";
+
+import { fixtureTo, snapshotInput } from "../../fixtures/snapshot.ts";
+import { SNAPSHOT_KEY } from "../stats/storage.ts";
+import { buildSnapshot } from "./aggregate.ts";
+import type { CollectOptions } from "./collect.ts";
 import { runRefresh } from "./refresh-run.ts";
 import type { RefreshBindings, RefreshSteps } from "./refresh-run.ts";
-import type { CollectOptions } from "./collect.ts";
-import { buildSnapshot } from "./aggregate.ts";
-import { SNAPSHOT_KEY } from "../stats/storage.ts";
-import { fixtureTo, snapshotInput } from "../../fixtures/snapshot.ts";
 
 const snapshot = buildSnapshot(snapshotInput());
 const result = {

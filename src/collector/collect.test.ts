@@ -1,9 +1,11 @@
 import assert from "node:assert/strict";
+
 import { test } from "vitest";
+
+import { fixtureFetch, paginatedFixture } from "../../fixtures/collection.ts";
+import { fixtureTo, publicRepository } from "../../fixtures/snapshot.ts";
 import { collectSnapshot, collectionError } from "./collect.ts";
 import type { CollectOptions } from "./collect.ts";
-import { fixtureTo, publicRepository } from "../../fixtures/snapshot.ts";
-import { fixtureFetch, paginatedFixture } from "../../fixtures/collection.ts";
 
 const options = { login: "Pugma", token: "test-secret", now: fixtureTo };
 

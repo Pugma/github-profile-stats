@@ -1,5 +1,6 @@
-import { loadEnv } from "vite";
 import { bindings, defineConfig, exports as workerExports, triggers } from "cf/config";
+import { loadEnv } from "vite";
+
 import * as entrypoint from "./src/index.ts" with { type: "cf-worker" };
 import { refreshSchedule } from "./src/refresh-schedule.ts";
 

@@ -1,9 +1,11 @@
 import assert from "node:assert/strict";
-import { test, vi } from "vitest";
+
 import type { WorkflowEvent, WorkflowStep } from "cloudflare:workers";
+import { test, vi } from "vitest";
+
 import { executionContext, unexpectedCloudflareCall } from "../../fixtures/cloudflare.ts";
-import { ProfileRefresh } from "./workflow.ts";
 import type { RefreshBindings } from "./refresh-run.ts";
+import { ProfileRefresh } from "./workflow.ts";
 
 const runRefresh = vi.hoisted(() =>
   vi.fn(async (_now: Date, _env: unknown, _step: unknown, _purge: unknown) => ({})),

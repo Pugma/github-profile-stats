@@ -1,5 +1,7 @@
 import assert from "node:assert/strict";
+
 import { test } from "vitest";
+
 import { estimateTextWidth, fitText } from "./text.ts";
 
 test("text fitting accounts for narrow and wide characters and reserves the ellipsis", () => {

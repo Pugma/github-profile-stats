@@ -1,10 +1,12 @@
 import assert from "node:assert/strict";
+
 import { test } from "vitest";
-import { cardNames, renderCard, renderGallery, renderPendingCard } from "./cards.tsx";
-import { buildSnapshot } from "../collector/aggregate.ts";
+
 import { snapshotInput } from "../../fixtures/snapshot.ts";
-import { estimateTextWidth } from "./text.ts";
 import { svgElements, svgGroup, svgText } from "../../fixtures/svg.ts";
+import { buildSnapshot } from "../collector/aggregate.ts";
+import { cardNames, renderCard, renderGallery, renderPendingCard } from "./cards.tsx";
+import { estimateTextWidth } from "./text.ts";
 
 const snapshot = buildSnapshot(snapshotInput());
 

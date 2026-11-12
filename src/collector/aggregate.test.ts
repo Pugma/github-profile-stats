@@ -1,7 +1,9 @@
 import assert from "node:assert/strict";
+
 import { test } from "vitest";
-import { buildSnapshot } from "./aggregate.ts";
+
 import { publicRepository, snapshotInput } from "../../fixtures/snapshot.ts";
+import { buildSnapshot } from "./aggregate.ts";
 
 test("snapshots omit unused yearly rows and individual pull request details", () => {
   const result = buildSnapshot(snapshotInput());

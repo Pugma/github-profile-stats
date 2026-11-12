@@ -1,5 +1,7 @@
 import assert from "node:assert/strict";
+
 import { test, vi } from "vitest";
+
 import { executionContext, unexpectedCloudflareCall } from "../fixtures/cloudflare.ts";
 import { snapshotInput } from "../fixtures/snapshot.ts";
 import { buildSnapshot } from "./collector/aggregate.ts";

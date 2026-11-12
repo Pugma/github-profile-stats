@@ -1,4 +1,5 @@
 import { WorkerEntrypoint } from "cloudflare:workers";
+
 import { purgeCardCache, serveCards } from "./render/cards-handler.ts";
 import type { SnapshotReader } from "./stats/storage.ts";
 

@@ -1,5 +1,7 @@
 import assert from "node:assert/strict";
+
 import { test } from "vitest";
+
 import { classify, nextCursor, twelveMonthsAgo, yearRanges } from "./collection-helpers.ts";
 import type { Repository } from "./collection-helpers.ts";
 

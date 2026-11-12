@@ -1,5 +1,4 @@
-import { nextCursor, twelveMonthsAgo, yearRanges } from "./collection-helpers.ts";
-import type { Repository } from "./collection-helpers.ts";
+import { maxAvatarBytes, validateSnapshot } from "../stats/schema.ts";
 import { buildSnapshot } from "./aggregate.ts";
 import type {
   AuthoredItem,
@@ -7,7 +6,8 @@ import type {
   PullRequest,
   ReviewContribution,
 } from "./aggregate.ts";
-import { maxAvatarBytes, validateSnapshot } from "../stats/schema.ts";
+import { nextCursor, twelveMonthsAgo, yearRanges } from "./collection-helpers.ts";
+import type { Repository } from "./collection-helpers.ts";
 
 type Page<T> = {
   totalCount: number;

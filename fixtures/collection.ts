@@ -1,4 +1,5 @@
 import assert from "node:assert/strict";
+
 import { publicRepository, snapshotInput } from "./snapshot.ts";
 
 type Fault =

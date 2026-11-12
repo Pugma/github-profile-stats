@@ -1,8 +1,8 @@
-import { collectSnapshot } from "./collect.ts";
-import type { CollectOptions } from "./collect.ts";
+import { kvPropagationDelay, latestScheduledRefresh } from "../refresh-schedule.ts";
 import { validateSnapshot } from "../stats/schema.ts";
 import { SNAPSHOT_KEY } from "../stats/storage.ts";
-import { kvPropagationDelay, latestScheduledRefresh } from "../refresh-schedule.ts";
+import { collectSnapshot } from "./collect.ts";
+import type { CollectOptions } from "./collect.ts";
 
 export type RefreshSteps = NonNullable<CollectOptions["steps"]> & {
   sleep(name: string, duration: typeof kvPropagationDelay): Promise<void>;

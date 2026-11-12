@@ -1,10 +1,11 @@
 import type { Child } from "hono/jsx";
+
 import type { Snapshot } from "../stats/schema.ts";
 import { Icon } from "./icons.tsx";
 import type { IconName } from "./icons.tsx";
+import { estimateTextWidth, fitText } from "./text.ts";
 import { appearanceQuery, colorTokens, resolveTheme, themeNames, themes } from "./themes.ts";
 import type { Appearance, Palette } from "./themes.ts";
-import { estimateTextWidth, fitText } from "./text.ts";
 
 export const cardNames = ["overview", "projects", "oss", "recent"] as const;
 export type CardName = (typeof cardNames)[number];

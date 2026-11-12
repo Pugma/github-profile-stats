@@ -1,5 +1,11 @@
 import assert from "node:assert/strict";
+
 import { test } from "vitest";
+
+import { snapshotInput } from "../../fixtures/snapshot.ts";
+import { svgElements, svgGroup, svgText } from "../../fixtures/svg.ts";
+import { buildSnapshot } from "../collector/aggregate.ts";
+import { renderCard, renderGallery, renderPendingCard } from "./cards.tsx";
 import {
   appearanceQuery,
   colorTokens,
@@ -8,10 +14,6 @@ import {
   themeNames,
   themes,
 } from "./themes.ts";
-import { renderCard, renderGallery, renderPendingCard } from "./cards.tsx";
-import { buildSnapshot } from "../collector/aggregate.ts";
-import { snapshotInput } from "../../fixtures/snapshot.ts";
-import { svgElements, svgGroup, svgText } from "../../fixtures/svg.ts";
 
 const snapshot = buildSnapshot(snapshotInput());
 

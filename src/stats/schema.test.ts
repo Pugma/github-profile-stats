@@ -1,8 +1,10 @@
 import assert from "node:assert/strict";
+
 import { test } from "vitest";
+
+import { sampleSnapshot } from "../../fixtures/stats.ts";
 import { validateSnapshot } from "./schema.ts";
 import type { Snapshot } from "./schema.ts";
-import { sampleSnapshot } from "../../fixtures/stats.ts";
 
 test("snapshot validation accepts an absent Recent section", () => {
   const pending = sampleSnapshot();
