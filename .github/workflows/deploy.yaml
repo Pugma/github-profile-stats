@@ -16,7 +16,7 @@ jobs:
       - uses: actions/checkout@v7.0.1
         with:
           persist-credentials: false
-      - uses: jdx/mise-action@v5.2.6
+      - uses: jdx/mise-action@v5.2.7
       - run: pnpm install --frozen-lockfile
       # GITHUB_TOKEN is set on the Worker in Cloudflare; deploys keep existing secrets.
       - run: pnpm deploy
