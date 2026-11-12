@@ -15,11 +15,10 @@ export const cardTitles: Record<CardName, string> = {
   recent: "Recent Contributions",
 };
 type CardProps = { snapshot: Snapshot; colors: Palette; languageOverride?: string };
-const cardWidth = 560;
 const displayWidth = 360;
 const fontFamily = "Arial, Helvetica, sans-serif";
 const padding = 20;
-const contentRight = cardWidth - padding;
+const contentRight = displayWidth - padding;
 // Gaps widen as elements become less related; every gap is a multiple of 4 px.
 const space = { part: 4, sibling: 8, header: 12, group: 16, section: 24 };
 // Text is centred in boxes of these heights, so gaps are measured between box edges.
@@ -36,7 +35,7 @@ const lineHeight = {
 const contentTop = padding + lineHeight.title + space.group;
 const footerHeight = space.group + lineHeight.meta + padding;
 // Lower tables reuse the Last 12 Months / All Time columns so values line up vertically.
-const valueColumns = { last12Months: 412, allTime: contentRight };
+const valueColumns = { last12Months: 260, allTime: contentRight };
 const rowIconSize = 16;
 const legendIconSize = 12;
 const labelX = padding + rowIconSize + space.part;
@@ -58,7 +57,7 @@ const rowTop = (top: number, index: number) => top + index * (lineHeight.row + s
 // Bars start just outside the row content and the longest one spans 70% of the card on every
 // card, so bar lengths compare consistently across cards.
 const barLeft = padding - space.part;
-const barWidth = (value: number, max: number) => (max > 0 ? (cardWidth * 0.7 * value) / max : 0);
+const barWidth = (value: number, max: number) => (max > 0 ? (displayWidth * 0.7 * value) / max : 0);
 const metricIcons = {
   totalContributions: "activity",
   commits: "commit",
@@ -89,8 +88,8 @@ function Card({
     <svg
       xmlns="http://www.w3.org/2000/svg"
       width={displayWidth}
-      height={(height * displayWidth) / cardWidth}
-      viewBox={`0 0 ${cardWidth} ${height}`}
+      height={height}
+      viewBox={`0 0 ${displayWidth} ${height}`}
       role="img"
       aria-labelledby={`${name}-title ${name}-description`}
       font-family={fontFamily}
@@ -100,7 +99,7 @@ function Card({
       <rect
         x="0.5"
         y="0.5"
-        width={cardWidth - 1}
+        width={displayWidth - 1}
         height={height - 1}
         rx="14"
         fill={colors.background}
@@ -1058,8 +1057,8 @@ export function renderPendingCard(name: CardName, appearance = resolveTheme()) {
     <svg
       xmlns="http://www.w3.org/2000/svg"
       width={displayWidth}
-      height={(pendingHeight * displayWidth) / cardWidth}
-      viewBox={`0 0 ${cardWidth} ${pendingHeight}`}
+      height={pendingHeight}
+      viewBox={`0 0 ${displayWidth} ${pendingHeight}`}
       role="img"
       font-family={fontFamily}
     >
@@ -1067,7 +1066,7 @@ export function renderPendingCard(name: CardName, appearance = resolveTheme()) {
       <rect
         x="0.5"
         y="0.5"
-        width={cardWidth - 1}
+        width={displayWidth - 1}
         height={pendingHeight - 1}
         rx="14"
         fill={colors.background}

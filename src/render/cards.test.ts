@@ -8,7 +8,7 @@ import { svgElements, svgGroup, svgText } from "../../fixtures/svg.ts";
 
 const snapshot = buildSnapshot(snapshotInput());
 
-test.each(cardNames)("%s scales to 360 px wide while preserving its aspect ratio", (name) => {
+test.each(cardNames)("%s uses a 360 px layout at its original height", (name) => {
   const empty = structuredClone(snapshot);
   empty.myProjects.topRepositories = [];
   empty.oss.topRepositories = [];
@@ -21,9 +21,10 @@ test.each(cardNames)("%s scales to 360 px wide while preserving its aspect ratio
     const { width, height, viewBox } = svgElements(svg, "svg")[0].attributes;
     const [, , layoutWidth, layoutHeight] = viewBox.split(" ").map(Number);
     assert.equal(Number(width), 360);
-    assert.equal(layoutWidth, 560);
-    assert.ok(Math.abs(Number(height) / Number(width) - layoutHeight / layoutWidth) < 1e-10);
+    assert.equal(layoutWidth, 360);
+    assert.equal(Number(height), layoutHeight);
   }
+  assert.equal(svgHeight(renderPendingCard(name)), 116);
 });
 
 test.each(cardNames)("%s renders a static SVG with a data update time", (name) => {
@@ -217,6 +218,7 @@ test("overview shows the avatar and login before the metrics at the five-row Pro
   input.avatarDataUrl = "data:image/png;base64,iVBORw0KGgo=";
   const svg = renderCard(input, "overview");
   assert.equal(svgHeight(svg), fiveRowProjectsHeight());
+  assert.equal(svgHeight(svg), 364);
   const avatar = svgElements(svg, "image")[0];
   assert.equal(avatar.attributes.href, input.avatarDataUrl);
   assert.ok(avatar.attributes["clip-path"]);
@@ -258,7 +260,7 @@ test("Overview background bars compare period shares rather than absolute counts
     .map((element) => Number(element.attributes.width));
   assert.equal(bars.length, 5);
   assert.equal(bars[2], Math.max(...bars));
-  assert.equal(Math.max(...bars), 560 * 0.7);
+  assert.equal(Math.max(...bars), 360 * 0.7);
   assert.ok(Math.abs(bars[0] / bars[2] - 0.1 / 0.9) < 1e-10);
   assert.ok(Math.abs(bars[1] / bars[2] - 0.2 / 0.9) < 1e-10);
   assert.equal(bars[3], 0);
@@ -446,7 +448,7 @@ test("the longest bar spans 70% of the card width on every card", () => {
     const right = Math.max(
       ...bars.map((element) => Number(element.attributes.x) + Number(element.attributes.width)),
     );
-    assert.ok(Math.abs(right - left - 560 * 0.7) < 1e-9, name);
+    assert.ok(Math.abs(right - left - 360 * 0.7) < 1e-9, name);
   }
 });
 
@@ -456,11 +458,11 @@ test("Recent uses more description width when its right-aligned counts are short
   repo.description = "A repository with a detailed description ".repeat(5);
   const visibleDescription = () => {
     const svg = renderCard(snapshot, "recent");
-    const description = svgElements(svg, "text").find((element) =>
-      element.text.startsWith("A repository with a detailed description"),
+    const description = svgElements(svg, "text").find(
+      (element) => element.attributes["clip-path"] === "url(#recent-description-0)",
     );
     assert.ok(description);
-    assert.ok(description.attributes["clip-path"]);
+    assert.ok(description.text.startsWith("A repository"));
     return description.text;
   };
   const shortCounts = visibleDescription();
