@@ -1,0 +1,10 @@
+# yaml-language-server: $schema=https://lefthook.dev/schema.json
+
+pre-commit:
+  jobs:
+    - group:
+        parallel: true
+        jobs:
+          - run: pnpm fmt
+          - run: pnpm lint
+          - run: pnpm typecheck
