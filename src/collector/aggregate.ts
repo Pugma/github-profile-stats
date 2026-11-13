@@ -140,7 +140,7 @@ function aggregatePeriod(input: SnapshotInput, period: ContributionPeriod) {
   };
 }
 
-export function buildSnapshot(input: SnapshotInput): Snapshot {
+export function buildSnapshot(input: SnapshotInput) {
   if (!input.years.length) throw new Error("Incomplete yearly contribution coverage");
   const allTimePeriod: ContributionPeriod = {
     from: input.years[0].from,

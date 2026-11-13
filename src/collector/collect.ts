@@ -1,4 +1,5 @@
 import { maxAvatarBytes, validateSnapshot } from "../stats/schema.ts";
+import type { Snapshot } from "../stats/schema.ts";
 import { buildSnapshot } from "./aggregate.ts";
 import type {
   AuthoredItem,
@@ -374,7 +375,7 @@ export async function collectSnapshot({
     }
   }
   const avatarDataUrl = await step("avatar", async () => (await avatar(avatarUrl)) ?? null);
-  const finalSnapshot = avatarDataUrl ? { ...snapshot, avatarDataUrl } : snapshot;
+  const finalSnapshot: Snapshot = avatarDataUrl ? { ...snapshot, avatarDataUrl } : snapshot;
   validateSnapshot(finalSnapshot);
   return {
     snapshot: finalSnapshot,

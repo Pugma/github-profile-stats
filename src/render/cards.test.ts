@@ -5,10 +5,11 @@ import { test } from "vitest";
 import { snapshotInput } from "../../fixtures/snapshot.ts";
 import { svgElements, svgGroup, svgText } from "../../fixtures/svg.ts";
 import { buildSnapshot } from "../collector/aggregate.ts";
+import type { Snapshot } from "../stats/schema.ts";
 import { cardNames, renderCard, renderGallery, renderPendingCard } from "./cards.tsx";
 import { estimateTextWidth } from "./text.ts";
 
-const snapshot = buildSnapshot(snapshotInput());
+const snapshot: Snapshot = buildSnapshot(snapshotInput());
 const svgHeight = (svg: string) => Number(svgElements(svg, "svg")[0].attributes.height);
 
 test.each(cardNames)("%s uses a 360 px layout at its original height", (name) => {
