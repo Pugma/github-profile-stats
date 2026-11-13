@@ -8,3 +8,4 @@ pre-commit:
           - run: pnpm fmt
           - run: pnpm lint
           - run: pnpm typecheck
+          - run: lefthook validate
