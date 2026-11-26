@@ -842,9 +842,7 @@ function Recent({ snapshot, colors, languageOverride }: CardProps) {
         font-size={typography.meta}
         fill={colors.muted}
       >
-        {recent
-          ? `Last 90 days · ${recent.from.slice(0, 10)} — ${recent.to.slice(0, 10)}`
-          : "Awaiting updated collection"}
+        {recent ? "Last 90 days" : "Awaiting updated collection"}
       </text>
       <Icon
         name="merged"

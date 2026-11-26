@@ -97,7 +97,7 @@ test("Recent displays repository descriptions, language and activity labels", ()
   assert.match(svg, />TypeScript</);
   assert.match(svg, />Merged PRs</);
   assert.match(svg, />Reviewed PRs</);
-  assert.match(svg, /Last 90 days/);
+  assert.equal(svgText(svg, "Last 90 days").text, "Last 90 days");
   delete enriched.recentRepositories;
   assert.match(renderCard(enriched, "recent"), /Awaiting updated collection/);
 });
