@@ -26,7 +26,7 @@ test.each(["overview", "projects", "oss", "recent"])(
     );
     assert.equal(response.status, 200);
     assert.equal(response.headers.get("content-type"), "image/svg+xml; charset=utf-8");
-    assert.equal(response.headers.get("cache-control"), "public, max-age=0, s-maxage=72120");
+    assert.equal(response.headers.get("cache-control"), "public, max-age=0, s-maxage=6300");
     assertCardSecurityHeaders(response);
     assert.match(await response.text(), /<svg/);
     assert.deepEqual(get.mock.calls, [[SNAPSHOT_KEY]]);

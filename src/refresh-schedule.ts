@@ -1,20 +1,21 @@
-const refreshHour = 3;
-const refreshMinute = 17;
-const dayMilliseconds = 24 * 60 * 60 * 1000;
+// Match the trigger in cloudflare.config.ts to reject delayed Workflows from an earlier cycle.
+const refreshHour = 9;
+const intervalMilliseconds = 12 * 60 * 60 * 1000;
 
-export const refreshSchedule = `${refreshMinute} ${refreshHour} * * *`;
 export const kvPropagationDelay = "2 minutes";
 
 export function latestScheduledRefresh(now = Date.now()) {
   const boundary = new Date(now);
-  boundary.setUTCHours(refreshHour, refreshMinute, 0, 0);
-  return boundary.getTime() > now ? boundary.getTime() - dayMilliseconds : boundary.getTime();
+  boundary.setUTCHours(refreshHour, 0, 0, 0);
+  if (now >= boundary.getTime() + intervalMilliseconds)
+    return boundary.getTime() + intervalMilliseconds;
+  return boundary.getTime() > now ? boundary.getTime() - intervalMilliseconds : boundary.getTime();
 }
 
 export function cardCacheControl(snapshotTo: string, now = Date.now()) {
   const mostRecentRefresh = latestScheduledRefresh(now);
-  // A stale KV read after the daily refresh must not refill the response cache for another day.
+  // A stale KV read after a refresh must not refill the response cache until the next cycle.
   if (Date.parse(snapshotTo) < mostRecentRefresh) return "no-store";
-  const secondsUntilRefresh = Math.ceil((mostRecentRefresh + dayMilliseconds - now) / 1000);
+  const secondsUntilRefresh = Math.ceil((mostRecentRefresh + intervalMilliseconds - now) / 1000);
   return `public, max-age=0, s-maxage=${secondsUntilRefresh}`;
 }

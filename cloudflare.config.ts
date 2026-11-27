@@ -2,7 +2,6 @@ import { bindings, defineConfig, exports as workerExports, triggers } from "cf/c
 import { loadEnv } from "vite";
 
 import * as entrypoint from "./src/index.ts" with { type: "cf-worker" };
-import { refreshSchedule } from "./src/refresh-schedule.ts";
 
 const env = loadEnv("production", ".", "PROFILE_");
 
@@ -16,7 +15,8 @@ export default defineConfig({
     previewUrls: false,
     cache: { enabled: true },
     observability: { enabled: true },
-    triggers: [triggers.scheduled({ schedule: refreshSchedule })],
+    // 6:00 & 18:00 JST
+    triggers: [triggers.scheduled({ schedule: "0 9,21 * * *" })],
     exports: {
       ProfileRefresh: workerExports.workflow({
         name: "github-profile-refresh",

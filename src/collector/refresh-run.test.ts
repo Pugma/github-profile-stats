@@ -133,7 +133,7 @@ test("an unpublished previous-cycle snapshot is rejected when its execution resu
     message: "Storage unavailable",
   });
   put.mockClear();
-  vi.setSystemTime(new Date("2026-10-27T03:17:00Z"));
+  vi.setSystemTime(new Date("2026-10-26T09:00:00Z"));
   await assert.rejects(
     runRefresh(fixtureTo, env, steps, purgeCache, collect),
     /older than the current refresh window/,
