@@ -358,13 +358,48 @@ test("OSS ranking columns line up under the Last 12 Months and All Time columns"
   const svg = renderCard(input, "oss");
   for (const [content, header] of [
     ["303", "Last 12 Months"],
-    ["PRs / Reviews / Issues", "Last 12 Months"],
     ["404", "All Time"],
   ]) {
     const value = svgText(svg, content).attributes;
     const heading = svgText(svg, header).attributes;
     assert.equal(value["text-anchor"], "end", content);
     assert.equal(value.x, heading.x, content);
+  }
+});
+
+test("OSS ranking shows each activity label with its colored icon without overlap", () => {
+  for (const empty of [false, true]) {
+    const input = structuredClone(snapshot);
+    if (empty) input.oss.topRepositories = [];
+    const svg = renderCard(input, "oss");
+    assert.doesNotMatch(svg, /activity count|PRs \/ Reviews \/ Issues/);
+    let previousEnd = 16;
+    const legendY = svgText(svg, "PRs").attributes.y;
+    for (const [label, color] of [
+      ["PRs", "#1a7f37"],
+      ["Reviews", "#0969da"],
+      ["Issues", "#bc4c00"],
+    ] as const) {
+      const text = svgElements(svg, "text").find(
+        (element) => element.text === label && element.attributes.y === legendY,
+      );
+      assert.ok(text);
+      const icon = svgElements(svgGroup(svg, text), "svg")[0];
+      assert.equal(icon.attributes.color, color);
+      assert.ok(Number(icon.attributes.x) >= previousEnd + 4);
+      assert.ok(
+        Number(icon.attributes.x) + 12 + 4 <=
+          Number(text.attributes.x) - estimateTextWidth(label, 11),
+      );
+      previousEnd = Number(text.attributes.x);
+    }
+    const commitsIcon = svgElements(svg, "svg").find(
+      (element) =>
+        element.attributes.color === "#385ee8" &&
+        Number(element.attributes.y) === Number(legendY) - 6,
+    );
+    assert.ok(commitsIcon);
+    assert.ok(previousEnd + 4 <= Number(commitsIcon.attributes.x));
   }
 });
 

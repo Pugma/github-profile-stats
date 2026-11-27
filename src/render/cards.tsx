@@ -642,19 +642,26 @@ function External({ snapshot, colors }: CardProps) {
     typography.body,
   );
   const nameWidth = valueColumns.last12Months - countLayout.width - space.group - labelX;
-  let legendX = padding;
+  let legendRight = valueColumns.last12Months;
   const legend = (
     [
-      { label: "PRs", color: colors.pr, icon: "pr" },
-      { label: "Reviews", color: colors.review, icon: "review" },
-      { label: "Issues", color: colors.issue, icon: "issue" },
-    ] satisfies { label: string; color: string; icon: IconName }[]
-  ).map((item) => {
-    const iconX = legendX;
-    const textX = iconX + legendIconSize + space.part;
-    legendX = textX + estimateTextWidth(item.label, typography.meta) + space.sibling;
-    return { ...item, iconX, textX };
-  });
+      { icon: "pr", label: "PRs" },
+      { icon: "review", label: "Reviews" },
+      { icon: "issue", label: "Issues" },
+    ] as const
+  )
+    .map((item, index) => ({ ...item, index }))
+    .reverse()
+    .map((item) => {
+      const textX = legendRight;
+      const iconX =
+        textX - estimateTextWidth(item.label, typography.meta) - space.part - legendIconSize;
+      const slashX = item.index > 0 ? iconX - space.part : null;
+      legendRight =
+        slashX === null ? iconX : slashX - estimateTextWidth("/", typography.meta) - space.part;
+      return { ...item, textX, iconX, slashX };
+    })
+    .reverse();
   const commitsLabelX =
     valueColumns.allTime - estimateTextWidth("Commits", typography.meta) - space.part;
   return (
@@ -679,39 +686,42 @@ function External({ snapshot, colors }: CardProps) {
       <SectionHeading
         top={sectionTop}
         title="Most Active Repositories"
-        meta="Last 12 Months · activity count"
+        meta="Last 12 Months"
         colors={colors}
       />
-      {legend.map(({ label, color, icon, iconX, textX }) => (
-        <g key={label}>
+      {legend.map(({ icon, label, textX, iconX, slashX }) => (
+        <g key={icon}>
           <Icon
             name={icon}
             x={iconX}
             y={legendY - legendIconSize / 2}
             size={legendIconSize}
-            color={color}
+            color={colors[icon]}
           />
           <text
             x={textX}
             y={legendY}
+            text-anchor="end"
             dominant-baseline="central"
             font-size={typography.meta}
             fill={colors.muted}
           >
             {label}
           </text>
+          {slashX !== null && (
+            <text
+              x={slashX}
+              y={legendY}
+              text-anchor="end"
+              dominant-baseline="central"
+              font-size={typography.meta}
+              fill={colors.muted}
+            >
+              /
+            </text>
+          )}
         </g>
       ))}
-      <text
-        x={valueColumns.last12Months}
-        y={legendY}
-        text-anchor="end"
-        dominant-baseline="central"
-        font-size={typography.meta}
-        fill={colors.muted}
-      >
-        PRs / Reviews / Issues
-      </text>
       <Icon
         name="commit"
         x={commitsLabelX - legendIconSize}
