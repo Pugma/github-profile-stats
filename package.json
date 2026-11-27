@@ -19,7 +19,7 @@
     "valibot": "^1.5.0"
   },
   "devDependencies": {
-    "@cloudflare/vite-plugin": "beta",
+    "@cloudflare/vite-plugin": "^2.0.0-beta.v.12",
     "@types/node": "^26.6.6",
     "cf": "^1.0.0-beta.26",
     "oxfmt": "^0.75.0",
