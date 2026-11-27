@@ -10,7 +10,6 @@ import { SNAPSHOT_KEY } from "../stats/storage.ts";
 import { purgeCardCache, serveCards } from "./cards-handler.ts";
 
 const snapshot = buildSnapshot(snapshotInput());
-const now = Date.parse(snapshot.period.to);
 const request = (path: string, method = "GET") =>
   new Request(`https://cards.invalid${path}`, { method });
 
@@ -22,11 +21,10 @@ test.each(["overview", "projects", "oss", "recent"])(
       request(`/cards/${name}.svg?theme=midnight`),
       { get },
       "public",
-      now,
     );
     assert.equal(response.status, 200);
     assert.equal(response.headers.get("content-type"), "image/svg+xml; charset=utf-8");
-    assert.equal(response.headers.get("cache-control"), "public, max-age=0, s-maxage=6300");
+    assert.equal(response.headers.get("cache-control"), "public, max-age=0, s-maxage=86400");
     assertCardSecurityHeaders(response);
     assert.match(await response.text(), /<svg/);
     assert.deepEqual(get.mock.calls, [[SNAPSHOT_KEY]]);
@@ -76,8 +74,8 @@ test.each([
 
 test("public HEAD returns GET headers with an empty body", async () => {
   const storage = { get: async () => JSON.stringify(snapshot) };
-  const get = await serveCards(request("/cards/overview.svg"), storage, "public", now);
-  const head = await serveCards(request("/cards/overview.svg", "HEAD"), storage, "public", now);
+  const get = await serveCards(request("/cards/overview.svg"), storage, "public");
+  const head = await serveCards(request("/cards/overview.svg", "HEAD"), storage, "public");
   assert.equal(get.status, 200);
   assert.equal(head.status, get.status);
   assert.deepEqual([...head.headers], [...get.headers]);
@@ -132,15 +130,14 @@ test.each([
   await assert.rejects(purgeCardCache(cache), { message: "Card cache purge failed" });
 });
 
-test("stale public snapshots remain visible with no-store after the scheduled refresh", async () => {
+test("older public snapshots remain visible with the fixed cache lifetime", async () => {
   const response = await serveCards(
     request("/cards/overview.svg"),
     { get: async () => JSON.stringify(snapshot) },
     "public",
-    Date.parse("2026-10-27T03:17:00Z"),
   );
   assert.equal(response.status, 200);
-  assert.equal(response.headers.get("cache-control"), "no-store");
+  assert.equal(response.headers.get("cache-control"), "public, max-age=0, s-maxage=86400");
   assertCardSecurityHeaders(response);
   const body = await response.text();
   const totalRow = svgGroup(body, svgText(body, "Total Contributions"));

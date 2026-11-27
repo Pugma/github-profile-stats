@@ -11,11 +11,3 @@ export function latestScheduledRefresh(now = Date.now()) {
     return boundary.getTime() + intervalMilliseconds;
   return boundary.getTime() > now ? boundary.getTime() - intervalMilliseconds : boundary.getTime();
 }
-
-export function cardCacheControl(snapshotTo: string, now = Date.now()) {
-  const mostRecentRefresh = latestScheduledRefresh(now);
-  // A stale KV read after a refresh must not refill the response cache until the next cycle.
-  if (Date.parse(snapshotTo) < mostRecentRefresh) return "no-store";
-  const secondsUntilRefresh = Math.ceil((mostRecentRefresh + intervalMilliseconds - now) / 1000);
-  return `public, max-age=0, s-maxage=${secondsUntilRefresh}`;
-}

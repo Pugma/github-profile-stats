@@ -1,4 +1,3 @@
-import { cardCacheControl } from "../refresh-schedule.ts";
 import { validateSnapshot } from "../stats/schema.ts";
 import { SNAPSHOT_KEY } from "../stats/storage.ts";
 import type { SnapshotReader } from "../stats/storage.ts";
@@ -29,7 +28,6 @@ export async function serveCards(
   request: Request,
   storage: SnapshotReader,
   visibility: "public" | "private",
-  now = Date.now(),
 ) {
   const headers = {
     ...cardSecurityHeaders,
@@ -72,9 +70,8 @@ export async function serveCards(
     const svg = renderCard(snapshot, name, appearance);
     return respond(svg, 200, {
       ...svgHeaders,
-      ...(visibility === "public"
-        ? { "Cache-Control": cardCacheControl(snapshot.period.to, now) }
-        : {}),
+      // Refresh purges the cache after publishing, so its TTL need not follow the schedule.
+      ...(visibility === "public" ? { "Cache-Control": "public, max-age=0, s-maxage=86400" } : {}),
     });
   } catch {
     return respond("Statistics unavailable", 503);
